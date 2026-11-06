@@ -1,0 +1,5 @@
+# Generated deploy output; Vercel recreates it with build.js.
+/public/index.html
+/public/styles.css
+/public/app.js
+/public/manus-routes.json

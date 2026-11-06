@@ -9,9 +9,9 @@ function git(args, opts = {}) { return execFileSync('git', args, { cwd: ROOT, en
 function fail(message) { throw new Error(message); }
 function parse(v) { const m = v.match(/^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?$/); return { a:+m[1], b:+m[2], c:+m[3], pre:m[4] || '' }; }
 function bump(current, spec) {
-  if (['patch','minor','major'].includes(spec)) { const v = parse(current); if (spec === 'major') v.a++; if (spec === 'minor') { v.b++; v.c=0; } if (spec === 'patch') v.c++; v.pre=''; return `${v.a}.${v.b}.${v.c}`; }
+  if (['patch','minor','major'].includes(spec)) { const v = parse(current); if (spec === 'major') { v.a++; v.b=0; v.c=0; } if (spec === 'minor') { v.b++; v.c=0; } if (spec === 'patch') v.c++; v.pre=''; return `${v.a}.${v.b}.${v.c}`; }
   if (!VERSION.test(spec)) fail(`Invalid bump kind or version: ${spec}`);
-  const a=parse(current), b=parse(spec); if ([b.a,b.b,b.c].some((n,i)=>n < [a.a,a.b,a.c][i]) || (b.a===a.a&&b.b===a.b&&b.c===a.c&&(!b.pre || a.pre))) fail(`Version ${spec} is not newer than ${current}`);
+  const a=parse(current), b=parse(spec); const newer = b.a > a.a || (b.a === a.a && (b.b > a.b || (b.b === a.b && (b.c > a.c || (b.c === a.c && Boolean(b.pre) && !a.pre))))); if (!newer) fail(`Version ${spec} is not newer than ${current}`);
   return spec;
 }
 function promote(text, version, date) {

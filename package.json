@@ -17,7 +17,7 @@
     "test": "node --test test/sms.test.js test/greeting.test.js test/flows.test.js test/income.test.js test/notifications.test.js test/sound.test.js test/tv.test.js",
     "release": "node scripts/release.js",
     "release:notes": "node scripts/release-notes.js",
-    "test:site": "node --test website/test/*.test.js"
+    "test:site": "node --test --test-concurrency=1 website/test/*.test.js"
   },
   "engines": {
     "node": ">=18"

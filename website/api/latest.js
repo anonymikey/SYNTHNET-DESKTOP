@@ -1,15 +1,6 @@
 'use strict';
-const { listReleases } = require('./_github');
-
-module.exports = async function latest(req, res) {
-  try {
-    const result = await listReleases();
-    const release = result.data.find((item) => !item.prerelease) || result.data[0] || null;
-    if (!release) return res.status(404).json({ error: 'No published releases found' });
-    res.setHeader('cache-control', result.stale ? 'public, max-age=60, stale-while-revalidate=300' : 'public, max-age=300, stale-while-revalidate=900');
-    res.setHeader('x-release-source', result.stale ? 'cache' : 'github');
-    return res.status(200).json({ release, stale: Boolean(result.stale) });
-  } catch (error) {
-    return res.status(503).json({ error: 'Release metadata is temporarily unavailable' });
-  }
+const { listReleases, latest } = require('./_github');
+module.exports = async function latestRoute(req, res) {
+  try { const result = await listReleases(); const release = latest(result.data); if (!release) return res.status(404).json({ error: 'not_found' }); res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=3600'); return res.status(200).json({ release, stale: Boolean(result.stale) }); }
+  catch (error) { const code = error.code || 'upstream'; const status = code === 'not_configured' ? 503 : code === 'not_found' ? 404 : code === 'bad_token' ? 401 : code === 'rate_limited' ? 429 : 503; return res.status(status).json({ error: code }); }
 };

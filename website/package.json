@@ -1,0 +1,8 @@
+{
+  "name": "synthnet-website",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Dependency-free SYNTHNET release website",
+  "engines": { "node": ">=18" },
+  "scripts": { "build": "node build.js", "dev": "node dev-server.js", "dev:mock": "node dev-server.js --mock", "test": "node --test --test-concurrency=1 test/*.test.js" }
+}
