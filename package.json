@@ -1,10 +1,10 @@
 {
   "name": "synthnet",
   "productName": "SYNTHNET",
-  "version": "0.10.0",
+  "version": "0.0.1",
   "description": "SYNTHNET - captive-portal hotspot manager for Windows",
   "main": "electron/main.js",
-  "author": "SYNTHNET",
+  "author": "Anonymike Tech <anonymiketech@gmail.com>",
   "license": "UNLICENSED",
   "scripts": {
     "app": "electron .",
@@ -64,7 +64,13 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
+      "perMachine": false,
+      "selectPerMachineByDefault": true,
+      "runAfterFinish": true,
       "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "SYNTHNET Desktop",
+      "uninstallDisplayName": "SYNTHNET Desktop",
       "artifactName": "SYNTHNET-Setup-${version}.exe"
     }
   }

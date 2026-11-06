@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Tray, Menu, dialog, nativeImage } = require('electron');
+const { app, BrowserWindow, Tray, Menu, dialog, nativeImage, shell } = require('electron');
 const path = require('path'), fs = require('fs'), crypto = require('crypto');
 const { execFile } = require('child_process');
 
@@ -11,6 +11,8 @@ fs.mkdirSync(DATA_DIR, { recursive: true });
 process.env.SYNTHNET_DATA = DATA_DIR;
 const ENV_FILE = path.join(DATA_DIR, '.env');
 const ICON = path.join(__dirname, '..', 'build', 'icon.png');
+const WEBSITE_URL = 'https://synthnetdesktop.anonymiketech.space';
+const DEVELOPER_EMAIL = 'anonymiketech@gmail.com';
 
 let win = null, tray = null, quitting = false, port = 80;
 
@@ -32,6 +34,17 @@ function ensureFirewall(p) {
 
 function openInNotepad(f) { execFile('notepad.exe', [f]); }
 
+function openProductWebsite() {
+  const version = app.getVersion();
+  const marker = path.join(app.getPath('userData'), '.last-website-version');
+  let previous = '';
+  try { previous = fs.readFileSync(marker, 'utf8').trim(); } catch {}
+  const isNewVersion = previous !== version;
+  const query = isNewVersion ? `?from=installer&release=${encodeURIComponent(version)}` : '?from=app';
+  try { fs.writeFileSync(marker, version); } catch {}
+  shell.openExternal(`${WEBSITE_URL}/${query}${isNewVersion ? '#history' : '#download'}`).catch(() => {});
+}
+
 function createWindow() {
   win = new BrowserWindow({
     width: 1200, height: 820, minWidth: 720, title: 'SYNTHNET', backgroundColor: '#020617', icon: ICON,
@@ -49,7 +62,6 @@ function createWindow() {
 function showWindow() { if (!win) return createWindow(); win.show(); win.focus(); }
 
 function buildMenus() {
-  const { shell } = require('electron');
   Menu.setApplicationMenu(Menu.buildFromTemplate([
     { label: 'File', submenu: [
       { label: 'Edit settings (.env)', click: () => openInNotepad(ENV_FILE) },
@@ -58,7 +70,11 @@ function buildMenus() {
       { type: 'separator' },
       { label: 'Quit SYNTHNET (stops hotspot)', click: () => quit() }] },
     { label: 'View', submenu: [{ role: 'reload' }, { role: 'toggleDevTools' }] },
-    { label: 'Help', submenu: [{ label: 'Preview guest portal in browser', click: () => shell.openExternal(`http://localhost:${port}/login`) }] }
+    { label: 'Help', submenu: [
+      { label: 'Open SYNTHNET website', click: () => shell.openExternal(WEBSITE_URL) },
+      { label: 'Contact developer', click: () => shell.openExternal(`mailto:${DEVELOPER_EMAIL}?subject=SYNTHNET%20Desktop%20support`) },
+      { label: 'Preview guest portal in browser', click: () => shell.openExternal(`http://localhost:${port}/login`) }
+    ] }
   ]));
   tray = new Tray(nativeImage.createFromPath(ICON).resize({ width: 16, height: 16 }));
   tray.setToolTip('SYNTHNET hotspot manager');
@@ -96,6 +112,7 @@ app.whenReady().then(async () => {
   ensureFirewall(port);
   buildMenus();
   createWindow();
+  openProductWebsite();
 
   // ORDER MATTERS: the gate must be filtering BEFORE the hotspot exists, so no device ever gets a free-internet moment.
   const gate = require('../src/gate'), hotspot = require('../src/hotspot'), guard = require('../src/guard');

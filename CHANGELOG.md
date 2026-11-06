@@ -6,6 +6,18 @@ All notable changes to SYNTHNET Desktop are documented here.
 
 <!-- Add plain-language notes under Added, Changed, Fixed, or Security. -->
 
+## [0.0.1] - 2026-11-06
+
+### Added
+
+**First public SYNTHNET Desktop release.** Run a local-first paid Wi-Fi hotspot with the Windows desktop dashboard, guest portal, package access, device visibility, and local configuration.
+
+**Branded Windows installer.** The installer uses the SYNTHNET brand artwork, requests the administrator permission required for hotspot control, offers installation-directory and shortcut choices, and can launch SYNTHNET after setup.
+
+**Release-aware website.** The desktop app opens the SYNTHNET website on launch, and a new installation or version update opens the release history so users can see the current build, past releases, and release notes.
+
+**Developer support contact.** Product and installation questions can be sent to anonymiketech@gmail.com.
+
 ## [0.10.0] - 2026-10-25
 
 ### Added

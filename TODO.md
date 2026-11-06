@@ -1,10 +1,13 @@
 # Delivery outcomes
 
-- [ ] Repository hygiene: no `.env`, `data/`, `node_modules`, secrets, customer data, or real phone/Till numbers; defaults sanitized; package artifact naming and scripts updated.
-- [ ] Release helper: patch/minor/major/exact/prerelease bumps, changelog promotion, commit/tag, dry-run, push, refusal rules, and notes extraction implemented and tested.
-- [ ] CI and release workflows: Node 20 tests, website tests/build, Windows x64 NSIS build, checksum and hidden marker, GitHub Release publication, and actionlint-clean YAML.
-- [ ] Documentation: Keep-a-Changelog entries, short README, app guide, releasing guide, security and SmartScreen guidance.
-- [ ] Website APIs: release normalization, caching/stale fallback, latest selection, private/public downloads, safe errors, and no token leakage.
-- [ ] Website build and UI: dependency-free Vercel site, responsive accessible sections, release metadata, notes renderer, version history, FAQ, CSP-safe markup, fallback states, and assets.
-- [ ] Verification: app tests, release tests, website tests/build, npm ci dry-run, scans, and browser checks where tooling is available.
-- [ ] Final: sanitized repository zip with milestone checkpoints and an honest verification report.
+- [x] Repository hygiene: no `.env`, `data/`, `node_modules`, secrets, customer data, or real phone/Till numbers in the tracked repository.
+- [x] Release helper: patch/minor/major/exact/prerelease bumps, changelog promotion, commit/tag, dry-run, push, refusal rules, and notes extraction.
+- [x] CI and release workflows: Node tests, website tests/build, Windows x64 NSIS build, checksum and GitHub Release publication.
+- [x] Documentation: Keep-a-Changelog entries, app guide, release guide, security and SmartScreen guidance.
+- [x] Website APIs: release normalization, caching/stale fallback, latest selection, private/public downloads, safe errors, and no token leakage.
+- [x] Website and brand: responsive Vercel site, release metadata, notes renderer, version history, FAQ, developer contact, supplied brand logo, and fallback states.
+- [x] v0.0.1 product readiness: package and lockfile version set to `0.0.1`; installer uses the supplied brand artwork, requests administrator elevation, supports install-directory and per-user/per-machine choices, creates Desktop and Start menu availability, and launches after setup.
+- [x] Browser handoff: every app launch opens the public website; first install or version update opens the release history with the current release context.
+- [ ] Manual launch: create and push the annotated `v0.0.1` tag so GitHub Actions builds and publishes the first installer release.
+- [ ] Manual release verification: install the Windows artifact, confirm UAC, shortcut behavior, native icon, dashboard launch, browser handoff, and hotspot startup on a clean Windows machine.
+- [ ] Optional signing: configure `WIN_CSC_LINK` and `WIN_CSC_KEY_PASSWORD` before public distribution to reduce SmartScreen warnings.

@@ -1,4 +1,4 @@
-# SYNTHNET Desktop (v0.4)
+# SYNTHNET Desktop (v0.0.1)
 
 Install once, run as Administrator, manage everything from the dashboard.
 
@@ -7,15 +7,17 @@ Install once, run as Administrator, manage everything from the dashboard.
 2. In this folder: `npm install` (downloads Electron, koffi, Tailwind).
 3. Test without installing: open **PowerShell as Administrator** here and run `npm run app`.
    Alternatively, run `start.bat` as Administrator for color-coded startup and service logs in the console.
-4. Make the installer: `npm run dist` -> `dist\SYNTHNET Setup 0.3.0.exe`. Install it; it always asks for Administrator (UAC).
-   Windows SmartScreen may warn because the installer is unsigned: More info > Run anyway.
+4. Make the installer: `npm run dist` -> `dist\SYNTHNET-Setup-0.0.1.exe`. The assisted installer lets the user choose the install location and per-user/per-machine mode, creates Desktop and Start menu availability, and asks for Administrator permission because hotspot control requires elevation.
+   Windows SmartScreen may warn because the installer is unsigned: More info > Run anyway. The installer uses the SYNTHNET brand artwork and launches the app after setup unless the user clears that option.
 
 ## What happens when SYNTHNET starts
 1. Creates `%APPDATA%\SYNTHNET\data\` with `.env` (random admin token), `portal.json`, vouchers, payments.
 2. Opens Windows Firewall for the portal port, starts the portal server.
 3. Starts the **Internet gate** (downloads the WinDivert driver on first run) so unpaid phones reach only the portal.
 4. Renames + starts the Windows hotspot: `SYNTHNET_VOUCHER_HOTSPOT` / `12345678` (change in `.env`).
-5. Opens the dashboard (token entered automatically). Closing the window hides it to the tray; **Quit stops the hotspot**.
+5. Opens the dashboard (token entered automatically). The SYNTHNET website opens in the default browser; a first install or version update opens the release history, while a normal launch opens the latest-build section. Closing the window hides it to the tray; **Quit stops the hotspot**.
+
+For installation questions or developer contact, email `anonymiketech@gmail.com` or visit `https://synthnetdesktop.anonymiketech.space`.
 
 Edit settings: File menu > *Edit settings (.env)* (restart app after) or *Edit portal.json* (prices, till number, branding; instant). Change the admin password in the dashboard's **Change admin password** section; it takes effect immediately and is saved for the next restart.
 
