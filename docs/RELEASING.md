@@ -17,7 +17,7 @@ This guide is written for the owner who wants to publish an update without manua
 2. Add plain-language notes under `## [Unreleased]` in `CHANGELOG.md`.
 3. Run `npm test` and `npm run test:site`.
 4. Publish with one command, for example `npm run release -- minor --push`.
-5. The helper updates both package files, promotes the changelog section, commits, tags, and pushes. The tag starts the Windows build. GitHub Actions publishes the installer and checksum to a GitHub Release. Vercel reads the latest release automatically; no website redeploy is needed.
+5. The helper updates both package files, promotes the changelog section, commits, tags, and pushes. In GitHub Actions, open **Windows Release → Run workflow**, enter the exact tag such as `v0.0.1`, and start it. The workflow publishes the installer and checksum to a GitHub Release. Vercel reads the latest release automatically; no website redeploy is needed.
 
 Use `--dry-run` to inspect a release without changing files. Use `npm run release:notes -- 0.0.1` to print a release section.
 
