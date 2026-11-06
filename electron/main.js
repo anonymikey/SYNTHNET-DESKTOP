@@ -90,7 +90,7 @@ function buildMenus() {
     { label: 'View', submenu: [{ role: 'reload' }, { role: 'toggleDevTools' }] },
     { label: 'Help', submenu: [
       { label: 'Open SYNTHNET website', click: () => shell.openExternal(`${WEBSITE_URL}/?from=app#download`) },
-      { label: 'Contact developer', click: () => shell.openExternal(`mailto:${DEVELOPER_EMAIL}?subject=SYNTHNET%20Desktop%20support`) },
+      { label: 'Contact developer / request a feature', click: () => shell.openExternal(`mailto:${DEVELOPER_EMAIL}?subject=SYNTHNET%20feature%20request%20or%20support`) },
       { label: 'Preview guest portal in browser', click: () => shell.openExternal(`http://localhost:${port}/login`) }
     ] }
   ]));
