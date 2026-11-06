@@ -40,7 +40,7 @@ function openProductWebsite() {
   let previous = '';
   try { previous = fs.readFileSync(marker, 'utf8').trim(); } catch {}
   const isNewVersion = previous !== version;
-  const query = isNewVersion ? `/release.html?version=${encodeURIComponent(version)}&from=installer` : '/?from=app#download';
+  const query = isNewVersion ? `/release?version=${encodeURIComponent(version)}&from=installer` : '/?from=app#download';
   try { fs.writeFileSync(marker, version); } catch {}
   shell.openExternal(`${WEBSITE_URL}${query}`).catch(() => {});
 }
@@ -59,7 +59,7 @@ async function checkForUpdates() {
     const payload = await response.json(); const release = payload.release;
     if (!release || compareVersions(release.version, app.getVersion()) <= 0) return;
     const choice = await dialog.showMessageBox({ type: 'info', title: 'SYNTHNET update available', message: `SYNTHNET v${release.version} is available.`, detail: 'Update now to get the newest features, fixes, and improvements. Your local data will remain on this computer.', buttons: ['View update', 'Later'], defaultId: 0, cancelId: 1, noLink: true });
-    if (choice.response === 0) shell.openExternal(`${WEBSITE_URL}/release.html?version=${encodeURIComponent(release.version)}&from=update`).catch(() => {});
+    if (choice.response === 0) shell.openExternal(`${WEBSITE_URL}/release?version=${encodeURIComponent(release.version)}&from=update`).catch(() => {});
   } catch {}
 }
 
