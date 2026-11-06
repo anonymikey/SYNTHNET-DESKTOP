@@ -1,0 +1,57 @@
+name: Release
+on:
+  push:
+    tags: ['v[0-9]+.[0-9]+.[0-9]+*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to rebuild
+        required: true
+        type: string
+permissions: { contents: write }
+env:
+  TAG: ${{ inputs.tag || github.ref_name }}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: ${{ env.TAG }} }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: npm }
+      - run: npm ci
+        env: { ELECTRON_SKIP_BINARY_DOWNLOAD: '1' }
+      - run: node scripts/release-notes.js --check-tag "$TAG"
+      - run: npm test
+  build:
+    needs: verify
+    runs-on: windows-latest
+    defaults: { run: { shell: bash } }
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: ${{ env.TAG }} }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: npm }
+      - run: npm ci
+      - run: npx electron-builder --win nsis --x64 --publish never
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+          CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+      - name: Checksums and notes
+        run: |
+          exe=$(find dist -maxdepth 1 -type f -iname 'SYNTHNET-Setup-*.exe' | head -1)
+          sha=$(sha256sum "$exe" | cut -d' ' -f1)
+          echo "$sha  $(basename "$exe")" > dist/SHA256SUMS.txt
+          node scripts/release-notes.js "${TAG#v}" > /tmp/notes.md
+          { cat /tmp/notes.md; echo; echo "SHA-256: $sha"; echo "<!-- sha256:$sha -->"; } > RELEASE_NOTES.md
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          name: SYNTHNET ${{ env.TAG }}
+          body_path: RELEASE_NOTES.md
+          prerelease: ${{ contains(env.TAG, '-') }}
+          fail_on_unmatched_files: true
+          files: |
+            dist/SYNTHNET-Setup-*.exe
+            dist/SHA256SUMS.txt

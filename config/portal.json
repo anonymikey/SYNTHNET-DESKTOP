@@ -1,0 +1,151 @@
+{
+  "brand": {
+    "name": "SYNTHNET Desktop",
+    "tagline": "Fast, reliable community Wi-Fi",
+    "logoUrl": null
+  },
+  "payment": {
+    "method": "M-Pesa Till",
+    "till": "000000",
+    "accountName": "Your Business",
+    "supportPhone": "0700000000",
+    "instructions": [
+      "Open M-Pesa > Lipa na M-Pesa > Buy Goods & Services",
+      "Enter Till Number 000000 and the amount for your package",
+      "After paying, follow the confirmation instructions for your business",
+      "If you need help, contact 0700000000"
+    ]
+  },
+  "tiers": [
+    {
+      "id": "1h",
+      "name": "1 Hour Unlimited",
+      "priceKsh": 5,
+      "minutes": 60,
+      "note": "Unlimited data"
+    },
+    {
+      "id": "3h",
+      "name": "3 Hours Unlimited",
+      "priceKsh": 8,
+      "minutes": 180,
+      "note": "Unlimited data"
+    },
+    {
+      "id": "5h",
+      "name": "5 Hours Unlimited",
+      "priceKsh": 10,
+      "minutes": 300,
+      "note": "Unlimited data"
+    },
+    {
+      "id": "6h",
+      "name": "6 Hours Unlimited",
+      "priceKsh": 15,
+      "minutes": 360,
+      "note": "Unlimited data"
+    },
+    {
+      "id": "12h",
+      "name": "12 Hours Unlimited",
+      "priceKsh": 20,
+      "minutes": 720,
+      "note": "Unlimited data"
+    },
+    {
+      "id": "24h",
+      "name": "24 Hours Unlimited",
+      "priceKsh": 30,
+      "minutes": 1440,
+      "note": "Unlimited data"
+    },
+    {
+      "id": "2d",
+      "name": "2 Days Unlimited",
+      "priceKsh": 50,
+      "minutes": 2880,
+      "note": "Unlimited data"
+    },
+    {
+      "id": "7d",
+      "name": "7 Days Unlimited",
+      "priceKsh": 150,
+      "minutes": 10080,
+      "note": "Unlimited data"
+    },
+    {
+      "id": "30d",
+      "name": "30 Days Unlimited",
+      "priceKsh": 450,
+      "minutes": 43200,
+      "note": "Unlimited data"
+    },
+    {
+      "id": "30d-100g",
+      "name": "100 GB Data Plan",
+      "priceKsh": 400,
+      "minutes": 43200,
+      "note": "30 days \u00b7 100 GB",
+      "dataCapGB": 100
+    }
+  ],
+  "theme": {
+    "mode": "manual",
+    "manualTemplate": "default",
+    "weekday": {
+      "sunday": "sun",
+      "monday": "mon",
+      "tuesday": "tue",
+      "wednesday": "wed",
+      "thursday": "thu",
+      "friday": "fri",
+      "saturday": "sat"
+    },
+    "holidays": [
+      {
+        "date": "01-01",
+        "name": "New Year's Day",
+        "template": "newyear"
+      },
+      {
+        "date": "05-01",
+        "name": "Labour Day",
+        "template": "labour"
+      },
+      {
+        "date": "06-01",
+        "name": "Madaraka Day",
+        "template": "independence"
+      },
+      {
+        "date": "10-10",
+        "name": "Huduma Day",
+        "template": "independence"
+      },
+      {
+        "date": "10-20",
+        "name": "Mashujaa Day",
+        "template": "independence"
+      },
+      {
+        "date": "12-12",
+        "name": "Jamhuri Day",
+        "template": "independence"
+      },
+      {
+        "date": "12-25",
+        "name": "Christmas Day",
+        "template": "christmas"
+      },
+      {
+        "date": "12-26",
+        "name": "Boxing Day",
+        "template": "christmas"
+      }
+    ],
+    "animations": true,
+    "customBackground": false,
+    "customExt": null,
+    "bgVersion": 0
+  }
+}

@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>SYNTHNET MASTER</title>
+  <script src="/vendor/tailwind.js" onerror="var s=document.createElement('script');s.src='https://cdn.tailwindcss.com/3.4.17';document.head.appendChild(s)"></script>
+  <style>
+    /* ---- Notification bell ---- */
+    .bell{position:relative;display:grid;place-items:center;width:2.6rem;height:2.6rem;border-radius:9999px;border:1px solid #334155;background:#0f172a;color:#cbd5e1;cursor:pointer;transition:background .2s,border-color .2s,color .2s;--bc:34,211,238}
+    .bell:hover{background:#1e293b;color:#fff}
+    .bell svg{width:1.35rem;height:1.35rem;transform-origin:50% 12%}
+    .bell-badge{position:absolute;top:-.3rem;right:-.35rem;min-width:1.2rem;height:1.2rem;padding:0 .3rem;border-radius:9999px;background:rgb(var(--bc));color:#020617;font-size:.68rem;font-weight:800;line-height:1.2rem;text-align:center;box-shadow:0 0 0 2px #020617}
+    .bell-pulse{position:absolute;inset:-1px;border-radius:9999px;pointer-events:none;opacity:0}
+    .bell.has-unread{color:#fff;border-color:rgba(var(--bc),.55)}
+    .bell.ringing{background:rgba(var(--bc),.14);border-color:rgb(var(--bc));color:#fff;animation:bellGlow 1.8s ease-in-out infinite}
+    .bell.ringing svg{animation:bellSwing 2.2s ease-in-out infinite}
+    .bell.ringing .bell-pulse{border:2px solid rgb(var(--bc));animation:bellPulse 1.8s ease-out infinite}
+    .bell.ringing .bell-badge{animation:bellPop 1.1s ease-in-out infinite}
+    .bell.lvl-success{--bc:52,211,153}.bell.lvl-warning{--bc:251,191,36}.bell.lvl-critical{--bc:251,113,133}
+    @keyframes bellSwing{0%,46%,100%{transform:rotate(0)}6%{transform:rotate(-20deg)}12%{transform:rotate(18deg)}18%{transform:rotate(-15deg)}24%{transform:rotate(12deg)}30%{transform:rotate(-8deg)}36%{transform:rotate(5deg)}41%{transform:rotate(-2deg)}}
+    @keyframes bellPulse{0%{transform:scale(1);opacity:.75}100%{transform:scale(1.75);opacity:0}}
+    @keyframes bellGlow{0%,100%{box-shadow:0 0 0 0 rgba(var(--bc),.0)}50%{box-shadow:0 0 18px 2px rgba(var(--bc),.55)}}
+    @keyframes bellPop{0%,100%{transform:scale(1)}50%{transform:scale(1.22)}}
+    @keyframes bellIn{from{opacity:0;transform:translateY(-8px) scale(.98)}to{opacity:1;transform:none}}
+    @keyframes nToastIn{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+    @keyframes nItemIn{from{opacity:0;background:rgba(34,211,238,.18)}to{opacity:1}}
+    @media (prefers-reduced-motion:reduce){.bell.ringing,.bell.ringing svg,.bell.ringing .bell-pulse,.bell.ringing .bell-badge{animation:none!important}.bell.ringing{box-shadow:0 0 14px 2px rgba(var(--bc),.55)}}
+    .n-panel{animation:bellIn .18s ease-out both}
+    .n-item{animation:nItemIn 1.2s ease-out both}
+    .n-toast{animation:nToastIn .3s ease-out both}
+    .n-scroll::-webkit-scrollbar{width:8px}.n-scroll::-webkit-scrollbar-thumb{background:#334155;border-radius:8px}
+  </style>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100 antialiased">
+
+  <!-- Token gate -->
+  <section id="gate" class="mx-auto max-w-sm px-4 py-20 space-y-4">
+    <h1 class="text-2xl font-extrabold text-center">SYNTHNET Admin</h1>
+    <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 space-y-3">
+      <input id="tokenInput" type="password" placeholder="ADMIN_TOKEN" autocomplete="off"
+             class="w-full rounded-xl bg-slate-950 border border-slate-700 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-cyan-400">
+      <button id="tokenBtn" class="w-full rounded-xl bg-cyan-400 text-slate-950 font-bold py-3">Unlock</button>
+      <p id="gateMsg" class="text-sm text-rose-400 min-h-[1.25rem] text-center"></p>
+      <p class="text-xs text-slate-400 text-center">Use the ADMIN_TOKEN from the settings file used by this running app. In the desktop app, open File &gt; Edit settings (.env); for start.bat, use the project .env. Restart after changing it.</p>
+    </div>
+  </section>
+
+  <main id="app" class="hidden mx-auto max-w-6xl px-4 py-6 space-y-6">
+    <header class="sticky top-0 z-40 -mx-4 -mt-6 mb-0 flex items-center justify-between bg-slate-950/90 px-4 py-3 backdrop-blur">
+      <h1 class="text-xl font-extrabold">SYNTHNET <span class="text-cyan-400">Admin</span></h1>
+      <div class="flex items-center gap-4">
+        <button id="bellBtn" class="bell" type="button" aria-label="Notifications" aria-haspopup="dialog" aria-expanded="false" title="Notifications">
+          <span class="bell-pulse"></span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+          <span id="bellBadge" class="bell-badge hidden">0</span>
+        </button>
+        <button id="lockBtn" class="text-sm text-slate-400 underline">Lock</button>
+      </div>
+    </header>
+    <section id="bellPanel" class="n-panel hidden fixed right-2 top-[3.7rem] z-50 flex max-h-[78vh] w-[26rem] max-w-[calc(100vw-1rem)] flex-col overflow-hidden rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl shadow-black/60" role="dialog" aria-label="Notifications" tabindex="-1">
+      <div class="flex items-center justify-between gap-2 border-b border-slate-800 px-4 py-3">
+        <div class="flex items-center gap-2"><h2 class="font-bold">Notifications</h2><span id="bellCount" class="whitespace-nowrap rounded-full bg-slate-800 px-2 py-0.5 text-xs font-semibold text-slate-300">0 unread</span></div>
+        <div class="flex items-center gap-1">
+          <button id="bellReadAll" class="whitespace-nowrap rounded-lg px-2 py-1 text-xs font-semibold text-cyan-300 hover:bg-slate-800">Mark all read</button>
+          <button id="bellGear" class="rounded-lg px-2 py-1 text-base hover:bg-slate-800" title="Notification settings" aria-label="Notification settings">⚙️</button>
+          <button id="bellClose" class="rounded-lg px-2 py-1 text-base text-slate-400 hover:bg-slate-800" aria-label="Close">✕</button>
+        </div>
+      </div>
+      <div id="bellSettings" class="hidden space-y-3 border-b border-slate-800 bg-slate-950/60 px-4 py-3 text-sm">
+        <div class="flex flex-wrap gap-x-5 gap-y-2">
+          <label class="flex items-center gap-2"><input id="bellSound" type="checkbox" class="accent-cyan-400">Sound alerts</label>
+          <label class="flex items-center gap-2"><input id="bellDesktop" type="checkbox" class="accent-cyan-400">Desktop alerts <span class="text-xs text-slate-500">(when this window is in the background)</span></label>
+        </div>
+        <div><p class="mb-1 text-xs text-slate-400">Record these kinds of activity (untick to stop recording a kind):</p><div id="bellMutes" class="grid grid-cols-2 gap-x-3 gap-y-1 text-xs"></div></div>
+        <div class="flex flex-wrap gap-2"><button id="bellClearRead" class="rounded-lg bg-slate-800 px-3 py-1.5 text-xs">Clear read items</button><button id="bellClearAll" class="rounded-lg bg-rose-500/15 px-3 py-1.5 text-xs text-rose-200">Clear everything</button></div>
+      </div>
+      <div id="bellFilters" class="flex gap-1.5 overflow-x-auto border-b border-slate-800 px-3 py-2 text-xs"></div>
+      <div id="bellList" class="n-scroll min-h-[8rem] flex-1 overflow-y-auto"></div>
+      <div class="border-t border-slate-800 px-4 py-2 text-[11px] text-slate-500">Everything that happens on the platform is recorded here. Times are Nairobi (EAT).</div>
+    </section>
+    <div id="bellToasts" class="pointer-events-none fixed bottom-4 right-4 z-50 flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-2" aria-live="polite"></div>
+    <p id="toast" class="hidden rounded-xl bg-slate-800 px-4 py-2 text-sm"></p>
+    <p id="gateReason" class="hidden rounded-xl bg-amber-500/10 border border-amber-500/30 px-4 py-2 text-xs text-amber-200 break-words"></p>
+
+    <!-- Business overview: daily income + growth -->
+    <section id="biz" class="rounded-2xl bg-slate-900 border border-emerald-400/30 p-5 space-y-5">
+      <div class="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h2 class="text-lg font-extrabold">Business overview</h2>
+          <p class="text-xs text-slate-400">Daily income and growth from confirmed M-Pesa payments. Days are Nairobi days (EAT).</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <div id="bizRange" class="inline-flex overflow-hidden rounded-xl border border-slate-700 text-xs font-semibold">
+            <button data-days="7" class="px-3 py-1.5">7d</button><button data-days="14" class="px-3 py-1.5">14d</button><button data-days="30" class="px-3 py-1.5">30d</button><button data-days="90" class="px-3 py-1.5">90d</button>
+          </div>
+          <button id="bizRefresh" class="rounded-xl bg-slate-800 px-3 py-1.5 text-xs font-semibold">Refresh</button>
+        </div>
+      </div>
+      <div id="bizTrend" class="rounded-2xl border border-slate-800 bg-slate-950/60 p-4 text-sm text-slate-300">Loading…</div>
+      <div id="bizKpis" class="grid gap-3 grid-cols-2 lg:grid-cols-3 xl:grid-cols-6"></div>
+      <div class="space-y-2">
+        <h3 class="text-sm font-semibold">Revenue &amp; profit <span id="bizProfitRange" class="text-xs font-normal text-slate-500"></span></h3>
+        <div id="bizProfit" class="grid gap-3 grid-cols-2 lg:grid-cols-4"></div>
+        <p id="bizProfitHint" class="text-xs text-amber-300/90"></p>
+      </div>
+      <div class="rounded-2xl border border-slate-800 bg-slate-950/60 p-4 space-y-4">
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+          <div><h3 class="text-sm font-semibold">Daily earnings</h3><p id="bizDayLabel" class="text-xs text-slate-400"></p></div>
+          <div class="flex items-center gap-1.5">
+            <button id="bizDayPrev" class="rounded-lg bg-slate-800 px-3 py-1.5 text-sm font-bold" aria-label="Previous day">‹</button>
+            <input id="bizDayDate" type="date" class="rounded-lg bg-slate-900 border border-slate-700 px-2 py-1.5 text-xs">
+            <button id="bizDayNext" class="rounded-lg bg-slate-800 px-3 py-1.5 text-sm font-bold disabled:opacity-40" aria-label="Next day">›</button>
+            <button id="bizDayToday" class="rounded-lg bg-emerald-400/15 px-3 py-1.5 text-xs font-semibold text-emerald-300">Today</button>
+          </div>
+        </div>
+        <div id="bizDaySummary" class="grid grid-cols-3 gap-2 text-center"></div>
+        <div class="grid gap-6 md:grid-cols-2">
+          <div class="space-y-2"><h4 class="text-xs font-semibold uppercase tracking-wide text-slate-400">Earnings by package</h4><div id="bizPiePkg"></div></div>
+          <div class="space-y-2"><h4 class="text-xs font-semibold uppercase tracking-wide text-slate-400">Where the revenue goes</h4><div id="bizPieMoney"></div></div>
+        </div>
+      </div>
+      <div class="rounded-2xl border border-slate-800 bg-slate-950/60 p-4 space-y-2">
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+          <h3 class="text-sm font-semibold">Daily income</h3>
+          <div class="flex items-center gap-4 text-[11px] text-slate-400">
+            <span class="flex items-center gap-1.5"><i class="inline-block h-2.5 w-2.5 rounded-sm bg-emerald-400"></i>Income</span>
+            <span class="flex items-center gap-1.5"><i class="inline-block h-0.5 w-4 rounded bg-cyan-300"></i>7-day trend</span>
+          </div>
+        </div>
+        <div id="bizChart" class="relative"></div>
+      </div>
+      <div class="rounded-2xl border border-slate-800 bg-slate-950/60 p-4 space-y-2">
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+          <h3 class="text-sm font-semibold">Daily profit</h3>
+          <div class="flex items-center gap-4 text-[11px] text-slate-400">
+            <span class="flex items-center gap-1.5"><i class="inline-block h-2.5 w-2.5 rounded-sm bg-emerald-400"></i>Profit</span>
+            <span class="flex items-center gap-1.5"><i class="inline-block h-2.5 w-2.5 rounded-sm bg-rose-400"></i>Loss</span>
+          </div>
+        </div>
+        <div id="bizProfitChart" class="relative"></div>
+      </div>
+      <div class="grid gap-4 lg:grid-cols-2">
+        <div class="rounded-2xl border border-slate-800 bg-slate-950/60 p-4 space-y-2">
+          <h3 class="text-sm font-semibold">Weekly growth <span class="text-xs font-normal text-slate-500">(weeks start Monday)</span></h3>
+          <div class="overflow-x-auto"><table class="w-full text-sm"><thead class="text-left text-xs uppercase text-slate-500"><tr><th class="py-1.5 pr-3">Week of</th><th class="pr-3 text-right">Income</th><th class="pr-3 text-right">Sales</th><th class="text-right">Change</th></tr></thead><tbody id="bizWeeks"></tbody></table></div>
+        </div>
+        <div class="rounded-2xl border border-slate-800 bg-slate-950/60 p-4 space-y-3">
+          <h3 class="text-sm font-semibold">Best-selling packages <span class="text-xs font-normal text-slate-500">(selected range)</span></h3>
+          <div id="bizPackages" class="space-y-2"></div>
+          <h3 class="pt-2 text-sm font-semibold">Busiest hours <span class="text-xs font-normal text-slate-500">(sales per hour, EAT)</span></h3>
+          <div id="bizHours"></div>
+        </div>
+      </div>
+      <details id="bizCosts" class="rounded-2xl border border-slate-800 bg-slate-950/60 p-4 space-y-3">
+        <summary class="cursor-pointer text-sm font-semibold text-slate-200">Costs &amp; profit settings <span class="text-xs font-normal text-slate-500">(so profit is real, not just revenue)</span></summary>
+        <p class="text-xs text-slate-400">Profit = revenue &minus; M-Pesa fees &minus; SMS cost &minus; daily running cost &minus; one-off expenses. Until you enter costs, profit equals revenue. The running cost starts on the day of your first sale, and today's share grows through the day.</p>
+        <div class="grid gap-2 sm:grid-cols-3">
+          <label class="space-y-1 text-xs text-slate-400">M-Pesa / provider fee (% of each payment)<input id="finFee" type="number" min="0" max="100" step="0.01" class="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100" placeholder="e.g. 1.5"></label>
+          <label class="space-y-1 text-xs text-slate-400">SMS cost per unit (KSh)<input id="finSms" type="number" min="0" max="1000" step="0.01" class="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100" placeholder="e.g. 0.40"></label>
+          <label class="space-y-1 text-xs text-slate-400">Running cost per day (KSh): internet, power, rent<input id="finDaily" type="number" min="0" step="1" class="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100" placeholder="e.g. 150"></label>
+        </div>
+        <div class="flex flex-wrap items-center gap-2"><button id="finSave" class="rounded-xl bg-emerald-400 px-4 py-2 text-sm font-bold text-slate-950">Save costs</button><span id="finMsg" class="text-xs min-h-[1rem]"></span></div>
+        <div class="border-t border-slate-800 pt-3 space-y-2">
+          <p class="text-xs font-semibold text-slate-300">One-off expenses <span class="font-normal text-slate-500">(repairs, equipment, airtime...) counted on the day they happened</span></p>
+          <div class="grid gap-2 sm:grid-cols-[auto_1fr_8rem_auto]">
+            <input id="expDate" type="date" class="rounded-lg bg-slate-900 border border-slate-700 px-2 py-2 text-sm">
+            <input id="expLabel" maxlength="60" placeholder="What was it? e.g. Router repair" class="rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-sm">
+            <input id="expAmount" type="number" min="0.01" step="0.01" placeholder="KSh" class="rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-sm">
+            <button id="expAdd" class="rounded-lg bg-slate-700 px-4 py-2 text-sm font-semibold">Add</button>
+          </div>
+          <div id="expList" class="space-y-1"></div>
+        </div>
+      </details>
+      <label class="flex items-center gap-2 text-xs text-slate-400"><input id="bizManual" type="checkbox" class="accent-emerald-400">Also count manual Till sales <span class="text-slate-500">(estimate: vouchers you generated that customers redeemed, at today's package price; awarded and free vouchers are never counted)</span></label>
+      <p id="bizNote" class="text-xs text-slate-500"></p>
+    </section>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+      <div class="rounded-2xl bg-slate-900 border border-slate-800 p-4"><p id="statAuth" class="text-2xl font-extrabold text-emerald-400">0</p><p class="text-xs text-slate-400">Logged in</p></div>
+      <div class="rounded-2xl bg-slate-900 border border-slate-800 p-4"><p id="statSeen" class="text-2xl font-extrabold text-amber-300">0</p><p class="text-xs text-slate-400">Not logged in</p></div>
+      <div class="rounded-2xl bg-slate-900 border border-slate-800 p-4"><p id="statHot" class="text-2xl font-extrabold">…</p><p class="text-xs text-slate-400">Hotspot</p></div>
+      <div class="rounded-2xl bg-slate-900 border border-slate-800 p-4"><p id="statGate" class="text-2xl font-extrabold">…</p><p class="text-xs text-slate-400">Internet gate</p></div>
+    </div>
+
+    <section id="secSection" class="rounded-2xl bg-slate-900 border border-slate-800 p-5 space-y-3">
+      <h2 class="font-semibold">Change admin password</h2>
+      <p class="text-xs text-slate-400">Use 12–128 characters. Quotes, backslashes, and leading/trailing spaces aren’t allowed. It takes effect immediately and is saved for the next restart.</p>
+      <form id="adminTokenForm" class="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
+        <input id="newAdminToken" type="password" minlength="12" maxlength="128" autocomplete="new-password" required placeholder="New admin password"
+               class="min-w-0 rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400">
+        <input id="confirmAdminToken" type="password" minlength="12" maxlength="128" autocomplete="new-password" required placeholder="Confirm new password"
+               class="min-w-0 rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400">
+        <button id="adminTokenSaveBtn" type="submit" class="rounded-xl bg-cyan-400 px-4 py-2 text-sm font-bold text-slate-950 disabled:opacity-50">Change password</button>
+      </form>
+      <p id="adminTokenMsg" class="text-sm min-h-[1.25rem]"></p>
+    </section>
+
+    <!-- Outage clock credit -->
+    <section id="outageSection" class="rounded-2xl bg-slate-900 border border-amber-500/30 p-5 space-y-3">
+      <div class="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h2 class="font-semibold">Service outage &amp; package time</h2>
+          <p id="outageState" class="mt-1 text-sm text-slate-300">Checking outage status…</p>
+          <p class="mt-1 text-xs text-slate-500">Use this when a service interruption affects customers. Active package timers pause until you mark service restored; impacted packages are credited for the tracked time.</p>
+        </div>
+        <div class="flex gap-2">
+          <button id="outageStartBtn" class="rounded-xl bg-amber-400 px-4 py-2 text-sm font-bold text-slate-950">Record outage</button>
+          <button id="outageResolveBtn" class="hidden rounded-xl bg-emerald-400 px-4 py-2 text-sm font-bold text-slate-950">Service restored</button>
+        </div>
+      </div>
+      <label class="flex items-center gap-2 text-xs text-slate-300"><input id="outageSms" type="checkbox" checked class="accent-amber-400">Also send an SMS to customers with active packages <span class="text-slate-500">(wording editable under SMS messaging)</span></label>
+      <p id="outageMsg" class="text-xs min-h-[1rem] text-slate-400"></p>
+    </section>
+
+    <!-- Clients -->
+    <section id="clientsSection" class="rounded-2xl bg-slate-900 border border-slate-800 p-5 space-y-3">
+      <div class="flex items-center justify-between"><h2 class="font-semibold">Connected clients</h2><span class="text-xs text-slate-500">auto-refresh 5s</span></div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="text-left text-slate-400 text-xs uppercase"><tr>
+            <th class="py-2 pr-3">IP</th><th class="pr-3">MAC</th><th class="pr-3">Status</th><th class="pr-3">Voucher</th><th class="pr-3">Time left</th><th></th></tr></thead>
+          <tbody id="clients"></tbody>
+        </table>
+      </div>
+      <p id="noClients" class="hidden text-sm text-slate-500">No devices yet.</p>
+      <p class="text-xs text-slate-500">"Not logged in" rows come from the Windows ARP cache and can linger a few minutes after a device leaves. With the Internet gate ON, Revoke also cuts the device's internet immediately. If the gate is OFF it only removes the portal session.</p>
+    </section>
+
+    <section id="tvSection" class="rounded-2xl bg-slate-900 border border-violet-400/30 p-5 space-y-3">
+      <h2 class="font-semibold">Link a TV by MAC address <span class="text-xs font-normal text-slate-500">(for TVs that cannot open the sign-in page)</span></h2>
+      <p class="text-xs text-slate-400">Customers can do this themselves in <b>My devices</b>. Use this when they ask you to. The TV needs an <b>active package</b>: it connects within seconds of joining the Wi-Fi and is cut off when the package ends. It counts toward the package's device limit.</p>
+      <div class="grid gap-2 sm:grid-cols-[1.2fr_1.2fr_1fr_auto]">
+        <input id="tvTarget" placeholder="Customer phone or voucher code" class="rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm">
+        <input id="tvMac" placeholder="TV MAC e.g. AA:BB:CC:DD:EE:FF" maxlength="24" class="rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 font-mono text-sm">
+        <input id="tvLabel" placeholder="Name (optional)" maxlength="30" class="rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm">
+        <button id="tvAdd" class="rounded-xl bg-violet-400 px-4 py-2 text-sm font-bold text-slate-950">Link TV</button>
+      </div>
+      <p id="tvMsg" class="text-xs min-h-[1rem]"></p>
+    </section>
+
+    <div class="grid gap-6 lg:grid-cols-2">
+      <!-- Voucher generator -->
+      <section id="vouchersSection" class="rounded-2xl bg-slate-900 border border-slate-800 p-5 space-y-3">
+        <h2 class="font-semibold">Generate vouchers</h2>
+        <div class="grid grid-cols-3 gap-2">
+          <select id="vTier" class="col-span-2 rounded-xl bg-slate-950 border border-slate-700 px-3 py-2"></select>
+          <input id="vCount" type="number" min="1" max="200" value="5" class="rounded-xl bg-slate-950 border border-slate-700 px-3 py-2">
+        </div>
+        <input id="vPhone" placeholder="SMS the code to a buyer (optional, 1 voucher) e.g. 0712345678" class="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm">
+        <button id="vBtn" class="w-full rounded-xl bg-cyan-400 text-slate-950 font-bold py-2.5">Generate &amp; save</button>
+        <div id="vOut" class="hidden space-y-2">
+          <textarea id="vText" readonly rows="6" class="w-full rounded-xl bg-slate-950 border border-slate-700 p-3 font-mono text-sm"></textarea>
+          <button id="vCopy" class="text-sm underline text-cyan-300">Copy all</button>
+        </div>
+      </section>
+
+      <!-- Award a voucher -->
+      <section class="rounded-2xl bg-slate-900 border border-amber-500/30 p-5 space-y-3">
+        <h2 class="font-semibold">Award free time</h2>
+        <p class="text-xs text-slate-400">Grant a package to one tenant for free — a loyal customer, a staff device, a refund. Click "Award" next to a client row below to fill in their IP, or enter an M-Pesa number. A phone should connect with the voucher code; a laptop/TV companion can use Reconnect with the number.</p>
+        <div class="grid grid-cols-2 gap-2">
+          <select id="awardTier" class="rounded-xl bg-slate-950 border border-slate-700 px-3 py-2"></select>
+          <select id="awardType" class="rounded-xl bg-slate-950 border border-slate-700 px-3 py-2">
+            <option value="mobile">Phone</option>
+            <option value="other">TV / laptop</option>
+          </select>
+        </div>
+        <input id="awardTarget" placeholder="IP (e.g. 192.168.137.12) or phone e.g. 0712345678" class="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm">
+        <input id="awardNote" placeholder="Note (optional, for your own records)" class="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm">
+        <button id="awardBtn" class="w-full rounded-xl bg-amber-400 text-slate-950 font-bold py-2.5">Award</button>
+        <p id="awardMsg" class="text-sm min-h-[1.25rem]"></p>
+      </section>
+
+      <!-- Hotspot -->
+      <section class="rounded-2xl bg-slate-900 border border-slate-800 p-5 space-y-3">
+        <h2 class="font-semibold">Hotspot</h2>
+        <p class="text-sm text-slate-300">State: <span id="hState" class="font-semibold">…</span> · Name: <span id="hSsid" class="font-mono"></span> · Devices: <span id="hClients">–</span></p>
+        <div class="grid grid-cols-2 gap-2">
+          <input id="hSsidIn" placeholder="SSID" class="rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm">
+          <input id="hPassIn" placeholder="Password (8+)" class="rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm">
+        </div>
+        <div class="grid grid-cols-3 gap-2 text-sm font-semibold">
+          <button data-hs="apply" class="rounded-xl bg-cyan-400 text-slate-950 py-2">Apply &amp; restart</button>
+          <button data-hs="start" class="rounded-xl bg-emerald-500 text-slate-950 py-2">Start</button>
+          <button data-hs="stop" class="rounded-xl bg-rose-500 text-slate-950 py-2">Stop</button>
+        </div>
+        <p id="hMsg" class="text-xs text-slate-400 min-h-[1rem]"></p>
+      </section>
+    </div>
+
+    <!-- Reconnect by phone number -->
+    <section id="rcSection" class="rounded-2xl bg-slate-900 border border-cyan-400/30 p-5 space-y-3">
+      <div class="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h2 class="font-semibold">Customer reconnect by phone number <span id="rcState" class="ml-1 rounded-full px-2 py-0.5 text-xs font-semibold bg-slate-700 text-slate-300">…</span></h2>
+          <p class="mt-1 text-xs text-slate-400">Customers who paid with M-Pesa never saw a voucher code. If their phone changes its Wi-Fi address they can get back online by entering the number they paid with (Portal &gt; Reconnect a device).</p>
+        </div>
+      </div>
+      <div class="grid gap-2 sm:grid-cols-[2fr_auto]">
+        <select id="rcMode" class="rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm">
+          <option value="auto">Automatic: SMS code when SMS is set up, otherwise number only (recommended)</option>
+          <option value="sms">Always require an SMS code (blocked if SMS is not set up)</option>
+          <option value="number">Number only, no code (anyone who knows the number could take over)</option>
+          <option value="off">Phones must use the voucher code (laptop/TV still reconnect by number)</option>
+        </select>
+        <button id="rcSave" class="rounded-xl bg-cyan-400 px-4 py-2 text-sm font-bold text-slate-950">Save</button>
+      </div>
+      <p id="rcInfo" class="text-xs text-slate-400"></p>
+      <p id="rcMsg" class="text-xs min-h-[1rem]"></p>
+    </section>
+
+    <!-- Connection sound -->
+    <section id="sndSection" class="rounded-2xl bg-slate-900 border border-violet-400/30 p-5 space-y-4">
+      <div class="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h2 class="font-semibold">Connection sound <span id="sndState" class="ml-1 rounded-full px-2 py-0.5 text-xs font-semibold bg-slate-700 text-slate-300">…</span></h2>
+          <p class="mt-1 max-w-xl text-xs text-slate-400">A short sound, <b>never longer than 2 seconds</b>, that customers hear on their own phone the moment they get connected: after entering a voucher, finishing a payment, or reconnecting. It does not play when someone just reopens the page while already connected.</p>
+        </div>
+        <label class="flex items-center gap-2 text-sm"><input id="sndEnabled" type="checkbox" class="accent-violet-400">Play a sound when customers connect</label>
+      </div>
+      <div id="sndGrid" class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3" role="radiogroup" aria-label="Connection sound"></div>
+      <div class="grid items-end gap-3 sm:grid-cols-[1fr_auto]">
+        <label class="block text-xs text-slate-400">Volume <b id="sndVolLabel" class="text-slate-200">70%</b>
+          <input id="sndVolume" type="range" min="5" max="100" step="5" class="mt-1 w-full accent-violet-400"></label>
+        <button id="sndTest" type="button" class="rounded-xl bg-violet-400/15 px-4 py-2 text-sm font-semibold text-violet-200">▶ Play selected</button>
+      </div>
+      <div class="space-y-2 rounded-xl border border-slate-800 bg-slate-950/60 p-3">
+        <p class="text-xs font-semibold text-slate-300">Your own sound <span class="font-normal text-slate-500">(optional)</span></p>
+        <p id="sndCustomInfo" class="text-xs text-slate-400"></p>
+        <div class="flex flex-wrap items-center gap-2">
+          <input id="sndFile" type="file" accept=".mp3,.wav,.ogg,.m4a,audio/*" class="max-w-full text-xs text-slate-300 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-700 file:px-3 file:py-1.5 file:text-xs file:text-slate-100">
+          <button id="sndRemove" type="button" class="hidden rounded-lg bg-rose-500/15 px-3 py-1.5 text-xs font-semibold text-rose-200">Remove my sound</button>
+        </div>
+        <p class="text-[11px] text-slate-500">MP3, WAV, OGG or M4A, up to <span id="sndMaxKb">300</span> KB. Only the first 2 seconds are ever played, so trim it to a short clip.</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2"><button id="sndSave" type="button" class="rounded-xl bg-violet-400 px-4 py-2 text-sm font-bold text-slate-950">Save sound</button><span id="sndMsg" class="text-xs min-h-[1rem]"></span></div>
+      <p class="text-xs text-slate-500">Phones only allow sound after the customer has tapped something on the page (that is a browser rule), and a phone on silent mode or with its volume down will not play it. If a browser blocks the sound, the customer is simply connected without it.</p>
+    </section>
+
+    <!-- Portal greeting -->
+    <section id="grSection" class="rounded-2xl bg-slate-900 border border-amber-400/30 p-5 space-y-4">
+      <div class="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h2 class="font-semibold">Portal greeting <span id="grState" class="ml-1 rounded-full px-2 py-0.5 text-xs font-semibold bg-slate-700 text-slate-300">…</span></h2>
+          <p class="mt-1 text-xs text-slate-400">The welcome card at the top of the customer login page. It changes with the time of day in <b>Nairobi (EAT, UTC+3)</b>, using this laptop's clock, not the customer's phone.</p>
+        </div>
+        <div class="flex flex-wrap gap-4 text-sm">
+          <label class="flex items-center gap-2"><input id="grEnabled" type="checkbox" class="accent-amber-400">Show greeting</label>
+          <label class="flex items-center gap-2"><input id="grClock" type="checkbox" class="accent-amber-400">Show date &amp; time</label>
+        </div>
+      </div>
+
+      <div class="rounded-xl bg-slate-950 border border-slate-800 p-3 space-y-2">
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+          <span class="text-xs font-semibold uppercase tracking-wide text-slate-400">Live preview</span>
+          <label class="flex items-center gap-2 text-xs text-slate-400">Preview as
+            <select id="grPreviewAs" class="rounded-lg bg-slate-900 border border-slate-700 px-2 py-1 text-xs"></select></label>
+        </div>
+        <div class="mx-auto max-w-md"><div id="grPreview"></div></div>
+        <p id="grPreviewOff" class="hidden text-center text-xs text-slate-500">Greeting is switched off: customers will not see this card.</p>
+      </div>
+
+      <div id="grRows" class="space-y-3"></div>
+      <p class="text-xs text-slate-500">Placeholders: <code>{brand}</code> your brand name, <code>{support}</code> your support number, <code>{day}</code> today's weekday (e.g. "Happy {day}!"). Each period runs from its start hour until the next one begins; the latest one carries on past midnight until the earliest starts.</p>
+      <div class="flex flex-wrap items-center gap-2">
+        <button id="grSave" class="rounded-xl bg-amber-400 px-4 py-2 text-sm font-bold text-slate-950">Save greeting</button>
+        <button id="grReset" class="rounded-xl bg-slate-700 px-4 py-2 text-sm">Reset to defaults</button>
+        <span id="grMsg" class="text-xs min-h-[1rem]"></span>
+      </div>
+    </section>
+
+    <!-- SMS messaging -->
+    <section id="smsSection" class="rounded-2xl bg-slate-900 border border-emerald-500/30 p-5 space-y-4">
+      <div class="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h2 class="font-semibold">SMS messaging <span id="smsState" class="ml-1 rounded-full px-2 py-0.5 text-xs font-semibold bg-slate-700 text-slate-300">checking…</span></h2>
+          <p class="mt-1 text-xs text-slate-400">Receipts, expiry reminders, outage notices and offers, sent through Olympus SMS. Messages wait in an outbox and retry automatically if the laptop's internet drops.</p>
+        </div>
+        <div class="grid grid-cols-3 gap-2 text-center text-xs">
+          <div class="rounded-xl bg-slate-950 px-3 py-2"><p id="smsStatQueued" class="text-lg font-extrabold text-amber-300">0</p><p class="text-slate-500">waiting</p></div>
+          <div class="rounded-xl bg-slate-950 px-3 py-2"><p id="smsStatSent" class="text-lg font-extrabold text-emerald-400">0</p><p class="text-slate-500">SMS sent 24h</p></div>
+          <div class="rounded-xl bg-slate-950 px-3 py-2"><p id="smsStatFailed" class="text-lg font-extrabold text-rose-400">0</p><p class="text-slate-500">failed 24h</p></div>
+        </div>
+      </div>
+
+      <details id="smsConn" class="rounded-xl border border-slate-800 p-4 space-y-3">
+        <summary class="cursor-pointer text-sm font-semibold text-slate-200">Connection</summary>
+        <p class="text-xs text-slate-400">Token: Olympus dashboard &gt; Developers &gt; Reveal token. Sender ID: your approved alphanumeric ID (max 11 characters) or phone number. Saved to the settings file; no restart needed. The token is never shown again here.</p>
+        <div class="grid gap-2 sm:grid-cols-[2fr_1fr_auto]">
+          <input id="smsToken" type="password" autocomplete="off" placeholder="API token (leave blank to keep current)" class="min-w-0 rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm font-mono">
+          <input id="smsSender" placeholder="Sender ID" maxlength="15" class="min-w-0 rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm">
+          <button id="smsCredSave" class="rounded-xl bg-cyan-400 px-4 py-2 text-sm font-bold text-slate-950">Save</button>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="smsTestConn" class="rounded-lg bg-slate-700 px-3 py-1.5 text-xs">Test connection</button>
+          <input id="smsTestPhone" placeholder="Send a test SMS to 0712345678" class="min-w-0 flex-1 rounded-lg bg-slate-950 border border-slate-700 px-3 py-1.5 text-xs">
+          <button id="smsTestSend" class="rounded-lg bg-slate-700 px-3 py-1.5 text-xs">Send test</button>
+        </div>
+        <p id="smsConnMsg" class="text-xs min-h-[1rem]"></p>
+      </details>
+
+      <details id="smsAuto" class="rounded-xl border border-slate-800 p-4 space-y-3">
+        <summary class="cursor-pointer text-sm font-semibold text-slate-200">Automatic messages <span class="text-xs font-normal text-slate-500">(turn on/off, edit wording)</span></summary>
+        <label class="flex items-center gap-2 text-sm"><input id="smsMaster" type="checkbox" class="accent-emerald-400">Send automatic customer messages</label>
+        <p id="smsPlaceholders" class="text-xs text-slate-500"></p>
+        <div id="smsKinds" class="space-y-3"></div>
+        <div class="space-y-1 pt-2 border-t border-slate-800">
+          <label class="text-xs text-slate-400">Do not message these numbers (customers who asked to stop; skipped by every message and broadcast)</label>
+          <textarea id="smsOptOut" rows="2" placeholder="0712345678, 0723456789" class="w-full rounded-xl bg-slate-950 border border-slate-700 p-3 text-sm font-mono"></textarea>
+        </div>
+        <button id="smsSettingsSave" class="rounded-xl bg-cyan-400 px-4 py-2 text-sm font-bold text-slate-950">Save message settings</button>
+        <p id="smsSettingsMsg" class="text-xs min-h-[1rem]"></p>
+      </details>
+
+      <details id="smsBroadcast" open class="rounded-xl border border-amber-500/30 p-4 space-y-3">
+        <summary class="cursor-pointer text-sm font-semibold text-slate-200">Send a message or offer to customers</summary>
+        <div class="grid gap-2 sm:grid-cols-[2fr_1fr]">
+          <select id="bcAudience" class="rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm">
+            <option value="all">All customers (everyone who has bought or been awarded a package)</option>
+            <option value="active">Online now (active package)</option>
+            <option value="lapsed">Lapsed (no active package: good for win-back offers)</option>
+            <option value="custom">Specific numbers I type</option>
+          </select>
+          <input id="bcDays" type="number" min="0" placeholder="Seen in last N days" class="rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm">
+        </div>
+        <textarea id="bcNumbers" rows="2" placeholder="Numbers separated by commas, spaces or new lines" class="hidden w-full rounded-xl bg-slate-950 border border-slate-700 p-3 text-sm font-mono"></textarea>
+        <textarea id="bcMessage" rows="4" maxlength="480" placeholder="e.g. Weekend offer: 24 Hours Unlimited for only KES 30 until Sunday. Join the Wi-Fi and pick a package. Help: {support}" class="w-full rounded-xl bg-slate-950 border border-slate-700 p-3 text-sm"></textarea>
+        <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
+          <span id="bcCounter" class="text-slate-400">0 characters</span>
+          <span id="bcAudienceInfo" class="text-slate-400">Counting recipients…</span>
+        </div>
+        <div class="grid gap-2 sm:grid-cols-[1fr_auto] items-center">
+          <label class="flex items-center gap-2 text-xs text-slate-400">Schedule (optional)<input id="bcSchedule" type="datetime-local" class="rounded-lg bg-slate-950 border border-slate-700 px-2 py-1.5 text-xs"></label>
+          <button id="bcSend" class="rounded-xl bg-amber-400 px-5 py-2.5 text-sm font-bold text-slate-950 disabled:opacity-50">Send</button>
+        </div>
+        <p class="text-xs text-slate-500">You can use {brand} and {support} in the text. Keep promotional messages to customers who have bought from you, and add numbers that ask to stop to the do-not-message list above. Scheduled time uses your Olympus account's time zone.</p>
+        <p id="bcMsg" class="text-sm min-h-[1.25rem]"></p>
+      </details>
+
+      <details id="smsLogBox" class="rounded-xl border border-slate-800 p-4 space-y-3">
+        <summary class="cursor-pointer text-sm font-semibold text-slate-200">Message log</summary>
+        <div class="overflow-x-auto max-h-72 overflow-y-auto">
+          <table class="w-full text-sm">
+            <thead class="text-left text-slate-400 text-xs uppercase"><tr><th class="py-2 pr-3">Time</th><th class="pr-3">To</th><th class="pr-3">Type</th><th class="pr-3">Status</th><th></th></tr></thead>
+            <tbody id="smsLog"></tbody>
+          </table>
+        </div>
+        <p class="text-xs text-slate-500">"Sent" means Olympus accepted the message. Hover a row to read the text or the error. Failed or cancelled messages can be retried.</p>
+      </details>
+    </section>
+
+    <!-- Portal content & prices -->
+    <section class="rounded-2xl bg-slate-900 border border-slate-800 p-5 space-y-5">
+      <h2 class="font-semibold">Portal content &amp; prices</h2>
+
+      <div class="space-y-2">
+        <h3 class="text-sm font-semibold text-slate-300">Branding</h3>
+        <div class="flex items-center gap-3">
+          <img id="curLogo" class="hidden h-12 w-12 rounded-xl object-cover border border-slate-700" alt="logo">
+          <div id="curLogoBadge" class="h-12 w-12 rounded-xl bg-gradient-to-br from-cyan-400 to-indigo-500 grid place-items-center text-lg font-black text-slate-950">S</div>
+          <div class="flex-1 flex gap-2">
+            <label class="rounded-lg bg-slate-700 px-3 py-1.5 text-xs cursor-pointer">Upload logo<input id="logoFile" type="file" accept="image/png,image/jpeg,image/webp" class="hidden"></label>
+            <button id="logoClearBtn" class="rounded-lg bg-slate-800 px-3 py-1.5 text-xs">Remove logo</button>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <input id="brandName" placeholder="Hotspot name" class="rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm">
+          <input id="brandTagline" placeholder="Tagline" class="rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm">
+        </div>
+        <button id="brandSaveBtn" class="rounded-xl bg-cyan-400 text-slate-950 font-bold py-2 px-4 text-sm">Save branding</button>
+        <p id="brandMsg" class="text-xs min-h-[1rem]"></p>
+      </div>
+
+      <div class="space-y-2 pt-2 border-t border-slate-800">
+        <h3 class="text-sm font-semibold text-slate-300">Manual payment details</h3>
+        <div class="grid grid-cols-2 gap-2">
+          <input id="payMethodIn" placeholder="Method (e.g. M-Pesa Till)" class="rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm">
+          <input id="payTillIn" placeholder="Till / Paybill number" class="rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm">
+          <input id="payNameIn" placeholder="Account name" class="rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm">
+          <input id="paySupportIn" placeholder="Support phone number" class="rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm">
+        </div>
+        <textarea id="payInstrIn" rows="4" placeholder="One instruction per line" class="w-full rounded-xl bg-slate-950 border border-slate-700 p-3 text-sm"></textarea>
+        <button id="paySaveBtn" class="rounded-xl bg-cyan-400 text-slate-950 font-bold py-2 px-4 text-sm">Save payment details</button>
+        <p id="payEditMsg" class="text-xs min-h-[1rem]"></p>
+      </div>
+
+      <div class="space-y-2 pt-2 border-t border-slate-800">
+        <div class="flex items-center justify-between"><h3 class="text-sm font-semibold text-slate-300">Packages &amp; prices</h3><button id="tierAddBtn" class="text-xs underline text-cyan-300">+ Add package</button></div>
+        <div id="tierRows" class="space-y-2"></div>
+        <button id="tiersSaveBtn" class="rounded-xl bg-cyan-400 text-slate-950 font-bold py-2 px-4 text-sm">Save packages</button>
+        <p id="tiersMsg" class="text-xs min-h-[1rem]"></p>
+      </div>
+    </section>
+
+    <!-- Portal theme -->
+    <section class="rounded-2xl bg-slate-900 border border-slate-800 p-5 space-y-4">
+      <div class="flex items-center justify-between flex-wrap gap-2">
+        <h2 class="font-semibold">Portal theme</h2>
+        <a href="/login" target="_blank" class="text-xs underline text-cyan-300">Preview portal ↗</a>
+      </div>
+
+      <div class="flex items-center gap-4 text-sm">
+        <label class="flex items-center gap-1.5"><input id="themeModeManual" type="radio" name="themeMode" value="manual">Manual</label>
+        <label class="flex items-center gap-1.5"><input id="themeModeAuto" type="radio" name="themeMode" value="auto">Automatic (changes every day)</label>
+        <label class="flex items-center gap-1.5 ml-auto"><input id="animToggle" type="checkbox">Animated themes</label>
+      </div>
+
+      <div id="manualThemeRow" class="space-y-1">
+        <label class="text-xs text-slate-400">Template</label>
+        <select id="manualTemplate" class="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm"></select>
+      </div>
+
+      <div id="autoThemeRows" class="hidden space-y-3">
+        <div>
+          <label class="text-xs text-slate-400">Day-of-week themes</label>
+          <div id="weekdayGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-1"></div>
+        </div>
+        <div>
+          <div class="flex items-center justify-between"><label class="text-xs text-slate-400">Holiday dates (override the weekday theme on that date)</label><button id="holidayAddBtn" class="text-xs underline text-cyan-300">+ Add date</button></div>
+          <div id="holidayRows" class="space-y-2 mt-1"></div>
+        </div>
+      </div>
+
+      <button id="themeSaveBtn" class="rounded-xl bg-cyan-400 text-slate-950 font-bold py-2 px-4 text-sm">Save theme settings</button>
+      <p id="themeMsg" class="text-xs min-h-[1rem]"></p>
+
+      <div class="pt-2 border-t border-slate-800 space-y-2">
+        <h3 class="text-sm font-semibold text-slate-300">Custom background photo <span class="text-xs text-slate-500 font-normal">(overrides every template above when set)</span></h3>
+        <div class="flex items-center gap-3">
+          <img id="curBg" class="hidden h-12 w-20 rounded-lg object-cover border border-slate-700" alt="background">
+          <label class="rounded-lg bg-slate-700 px-3 py-1.5 text-xs cursor-pointer">Upload photo<input id="bgFile" type="file" accept="image/png,image/jpeg,image/webp" class="hidden"></label>
+          <button id="bgClearBtn" class="rounded-lg bg-slate-800 px-3 py-1.5 text-xs">Remove photo</button>
+        </div>
+        <p id="bgMsg" class="text-xs min-h-[1rem]"></p>
+      </div>
+
+      <div class="pt-2 border-t border-slate-800 space-y-2">
+        <h3 class="text-sm font-semibold text-slate-300">Background image library</h3>
+        <p class="text-xs text-slate-500">Add PNG, JPG or WEBP images to <code id="imageFolder" class="break-all"></code>.</p>
+        <label class="flex items-center gap-2 text-xs text-slate-300">
+          <input id="imageRotationToggle" type="checkbox" class="accent-cyan-400">
+          Rotate library images automatically
+        </label>
+        <div class="flex flex-wrap items-center gap-2">
+          <select id="imageTodaySelect" class="min-w-0 flex-1 rounded-lg bg-slate-950 border border-slate-700 px-3 py-2 text-xs"></select>
+          <button id="imageRefreshBtn" class="rounded-lg bg-slate-700 px-3 py-2 text-xs">Refresh</button>
+          <button id="imageRotationSaveBtn" class="rounded-lg bg-cyan-400 px-3 py-2 text-xs font-bold text-slate-950">Save</button>
+        </div>
+        <img id="imageTodayPreview" class="hidden max-h-40 rounded-lg border border-slate-700 object-cover" alt="Selected background preview">
+        <p id="imageRotationMsg" class="text-xs min-h-[1rem]"></p>
+      </div>
+    </section>
+
+    <section id="paymentsSection" class="rounded-2xl bg-slate-900 border border-slate-800 p-5 space-y-3">
+      <div class="flex items-center justify-between gap-2 flex-wrap"><h2 class="font-semibold">M-Pesa payments <span id="payState" class="text-xs text-slate-500"></span></h2><button id="payTest" class="text-xs underline text-cyan-300">Test Courtney Tech connection</button></div>
+      <p id="payTestOut" class="hidden text-xs text-slate-300 break-words"></p>
+      <div class="overflow-x-auto max-h-64 overflow-y-auto">
+        <table class="w-full text-sm">
+          <thead class="text-left text-slate-400 text-xs uppercase"><tr><th class="py-2 pr-3">Time</th><th class="pr-3">Phone</th><th class="pr-3">Plan</th><th class="pr-3">KSH</th><th>Status</th></tr></thead>
+          <tbody id="payList"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Voucher inventory -->
+    <section class="rounded-2xl bg-slate-900 border border-slate-800 p-5 space-y-3">
+      <h2 class="font-semibold">Voucher inventory <span class="text-xs text-slate-500">(newest 100)</span></h2>
+      <div class="overflow-x-auto max-h-80 overflow-y-auto">
+        <table class="w-full text-sm">
+          <thead class="text-left text-slate-400 text-xs uppercase"><tr><th class="py-2 pr-3">Code</th><th class="pr-3">Plan</th><th class="pr-3">Status</th><th class="pr-3">Devices</th><th>Expires</th></tr></thead>
+          <tbody id="vList"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <script src="/admin/admin.js"></script>
+  <script src="/greeting.js?v=1"></script>
+  <script src="/connectsound.js?v=1"></script>
+  <script src="/admin/sound.js"></script>
+  <script src="/admin/greeting.js"></script>
+  <script src="/admin/insights.js"></script>
+  <script src="/admin/sms.js"></script>
+  <script src="/admin/tv.js"></script>
+  <script src="/admin/notifications.js"></script>
+</body>
+</html>

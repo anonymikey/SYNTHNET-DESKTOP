@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>SYNTHNETHOTSPOT – Wi-Fi Login</title>
+  <script src="/vendor/tailwind.js" onerror="var s=document.createElement('script');s.src='https://cdn.tailwindcss.com/3.4.17';document.head.appendChild(s)"></script>
+  <!--
+    Theme system: #themeBg is an empty, fixed, full-viewport layer sitting behind everything (z-index -10), so
+    none of the layout/card markup above ever changes. Each `[data-theme="X"]` rule below just paints that one
+    layer. The id list here must match src/themes.js's TEMPLATES — add/edit a theme in both places together.
+    data-theme="default" (and no matching rule) leaves #themeBg fully transparent, so an install that never
+    touches the theme feature looks pixel-identical to before it existed.
+  -->
+  <style>
+    #themeBg { position: fixed; inset: 0; z-index: -10; pointer-events: none; }
+    body[data-anim="off"] #themeBg, body[data-anim="off"] #themeBg::before, body[data-anim="off"] #themeBg::after { animation: none !important; }
+
+    @keyframes gradientDrift { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+    @keyframes twinkle { 0%, 100% { opacity: .25; } 50% { opacity: .9; } }
+    @keyframes floatY { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
+    @keyframes huePulse { 0%, 100% { filter: hue-rotate(0deg); } 50% { filter: hue-rotate(25deg); } }
+
+    /* Holidays */
+    body[data-theme="independence"] #themeBg { background: linear-gradient(135deg, #0a0a0a 0 20%, #b91c1c 20% 40%, #111111 40% 60%, #15803d 60% 80%, #0a0a0a 80% 100%); background-size: 300% 300%; animation: gradientDrift 14s ease-in-out infinite; }
+    body[data-theme="labour"] #themeBg { background: linear-gradient(135deg, #78350f, #b45309, #78350f); background-size: 250% 250%; animation: gradientDrift 10s ease-in-out infinite; }
+    body[data-theme="christmas"] #themeBg { background: radial-gradient(circle at 20% 20%, rgba(255,255,255,.12) 0 2px, transparent 3px), radial-gradient(circle at 60% 50%, rgba(255,255,255,.1) 0 2px, transparent 3px), radial-gradient(circle at 80% 80%, rgba(255,255,255,.12) 0 2px, transparent 3px), linear-gradient(160deg, #7f1d1d, #14532d); animation: gradientDrift 16s ease-in-out infinite; }
+    body[data-theme="newyear"] #themeBg { background: radial-gradient(circle at 50% 40%, rgba(250,204,21,.35), transparent 60%), #0a0a0a; animation: twinkle 4s ease-in-out infinite; }
+    body[data-theme="valentine"] #themeBg { background: radial-gradient(circle at 30% 30%, rgba(244,114,182,.35), transparent 55%), radial-gradient(circle at 70% 70%, rgba(239,68,68,.3), transparent 55%), #1a0a12; animation: floatY 6s ease-in-out infinite; }
+    body[data-theme="easter"] #themeBg { background: linear-gradient(120deg, #a7f3d0, #fde68a, #ddd6fe, #fbcfe8); background-size: 300% 300%; opacity: .22; animation: gradientDrift 12s ease-in-out infinite, huePulse 20s linear infinite; }
+    body[data-theme="eid"] #themeBg { background: linear-gradient(135deg, #0f766e, #134e4a, #854d0e); background-size: 250% 250%; animation: gradientDrift 14s ease-in-out infinite; }
+    body[data-theme="diwali"] #themeBg { background: radial-gradient(circle at 25% 25%, rgba(250,204,21,.3), transparent 50%), radial-gradient(circle at 75% 60%, rgba(168,85,247,.3), transparent 50%), #170b24; animation: twinkle 5s ease-in-out infinite; }
+
+    /* Weekdays — deliberately subtle since these rotate automatically every day */
+    body[data-theme="mon"] #themeBg { background: linear-gradient(160deg, #0b1220, rgba(30,58,138,.5)); }
+    body[data-theme="tue"] #themeBg { background: linear-gradient(160deg, #0b1220, rgba(15,118,110,.5)); }
+    body[data-theme="wed"] #themeBg { background: linear-gradient(160deg, #0b1220, rgba(109,40,217,.5)); }
+    body[data-theme="thu"] #themeBg { background: linear-gradient(160deg, #0b1220, rgba(180,83,9,.5)); }
+    body[data-theme="fri"] #themeBg { background: linear-gradient(135deg, #1a0a12, rgba(157,23,77,.6)); background-size: 250% 250%; animation: gradientDrift 9s ease-in-out infinite; }
+    body[data-theme="sat"] #themeBg { background: linear-gradient(160deg, #0b1220, rgba(21,128,61,.5)); }
+    body[data-theme="sun"] #themeBg { background: linear-gradient(160deg, #0b1220, rgba(51,65,85,.5)); }
+
+    /* Admin-uploaded photo (always wins over any named template — see resolveTheme in src/config.js). The image
+       URL itself is set inline by portal.js since it's user data, not something CSS can reference by id. */
+    body[data-theme="custom"] #themeBg { background-size: cover; background-position: center; }
+    body[data-theme="custom"] #themeBg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(2,6,23,.55), rgba(2,6,23,.85)); }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100 antialiased" data-theme="default" data-anim="on">
+  <div id="themeBg"></div>
+  <main class="mx-auto max-w-md px-4 py-8 space-y-6">
+
+    <header class="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
+      <div class="flex w-full min-w-0 flex-col items-center gap-2 sm:w-auto sm:flex-row sm:gap-3">
+        <div id="logoBadge" class="h-12 w-12 shrink-0 rounded-2xl bg-gradient-to-br from-cyan-400 to-indigo-500 grid place-items-center text-xl font-black text-slate-950">S</div>
+        <img id="logoImg" class="hidden h-12 w-12 shrink-0 rounded-2xl object-cover" alt="">
+        <div class="min-w-0 max-w-full text-center sm:text-left">
+          <h1 id="brand" class="max-w-full text-lg font-extrabold tracking-wide truncate">SYNTHNETHOTSPOT</h1>
+          <p id="tagline" class="text-slate-400 text-xs truncate"></p>
+        </div>
+      </div>
+      <nav class="flex w-full items-center gap-2 sm:w-auto sm:shrink-0">
+        <a href="/my-devices" class="flex-1 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-center text-xs font-bold text-slate-200 hover:border-cyan-400/40 sm:flex-none">My devices</a>
+        <a href="#reconnectCard" class="flex-1 rounded-xl border border-cyan-400/40 bg-cyan-400/10 px-3 py-2 text-center text-xs font-bold text-cyan-200 hover:bg-cyan-400/20 sm:flex-none">Already paid?</a>
+      </nav>
+    </header>
+    <section id="greeting" hidden aria-live="polite"></section>
+    <p class="text-center text-xs text-slate-400">
+      If Android does not open sign-in automatically,
+      <a id="portalFallbackLink" class="font-semibold text-cyan-300 underline" href="/login">tap here to open hotspot sign-in</a>.
+    </p>
+    <p id="authStatus" class="hidden text-center text-sm text-amber-300" role="status" aria-live="polite"></p>
+
+    <section id="connected" class="hidden overflow-hidden rounded-3xl border border-emerald-400/30 bg-slate-900 shadow-2xl shadow-emerald-950/20">
+      <div class="bg-gradient-to-r from-emerald-500/15 via-cyan-500/10 to-transparent p-5 space-y-4">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-[.18em] text-emerald-300">Access active</p>
+            <h2 class="mt-1 text-2xl font-extrabold">You're connected</h2>
+            <p id="connectedMessage" class="mt-1 text-sm text-slate-400">Your package is ready. You can browse normally.</p>
+          </div>
+          <span aria-hidden="true" class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-emerald-400 text-2xl font-black text-slate-950">✓</span>
+        </div>
+        <div id="outageNotice" class="hidden rounded-xl border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-sm text-amber-100"></div>
+        <div class="grid grid-cols-2 gap-2">
+          <div class="rounded-xl border border-slate-700 bg-slate-950/70 p-3">
+            <p class="text-[11px] uppercase tracking-wide text-slate-500">Your voucher</p>
+            <p id="connectedCode" class="mt-1 break-all font-mono text-sm font-bold text-cyan-200">–</p>
+          </div>
+          <div class="rounded-xl border border-slate-700 bg-slate-950/70 p-3">
+            <p class="text-[11px] uppercase tracking-wide text-slate-500">Package</p>
+            <p id="connectedPlan" class="mt-1 text-sm font-semibold text-slate-100">–</p>
+          </div>
+        </div>
+        <div class="rounded-2xl border border-slate-700 bg-slate-950/70 p-4">
+          <div class="flex items-end justify-between gap-2">
+            <div><p class="text-xs text-slate-400">Time remaining</p><p id="remaining" class="mt-1 font-mono text-2xl font-extrabold text-white">–</p></div>
+            <p id="connectedExpiry" class="text-right text-xs text-slate-500"></p>
+          </div>
+          <div class="mt-4 flex items-center justify-between text-xs text-slate-400"><span>Package time used</span><span id="usagePercent">0%</span></div>
+          <div class="mt-2 h-2.5 overflow-hidden rounded-full bg-slate-800" role="progressbar" aria-label="Package time used" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div id="usageBar" class="h-full rounded-full bg-gradient-to-r from-cyan-400 to-emerald-400 transition-[width] duration-700" style="width:0%"></div>
+          </div>
+          <p class="mt-2 text-[11px] text-slate-500">This shows package time, not data volume. Internet data usage is not currently measured.</p>
+        </div>
+      </div>
+      <div class="space-y-3 border-t border-slate-800 p-5">
+        <h3 class="font-semibold">Connect a laptop or TV</h3>
+        <ol class="list-decimal space-y-1.5 pl-5 text-sm text-slate-300">
+          <li>Join this hotspot using its Wi-Fi password.</li>
+          <li>Open the sign-in page and enter the same voucher code shown above, or use <span class="font-semibold text-cyan-200">Already paid?</span> with the M-Pesa number on the companion device.</li>
+        </ol>
+        <p class="rounded-xl bg-slate-950 px-3 py-2 text-xs text-slate-400">The Wi-Fi password only joins the network; a package is still required for internet. One package supports one phone and one companion device. Phone-number reconnect is limited to laptops/TVs, not another phone.</p>
+        <div class="flex items-center justify-between gap-3 pt-1">
+          <p class="text-xs text-slate-500">Keep this page open to check your package time.</p>
+          <button id="logoutBtn" class="shrink-0 text-xs underline text-slate-400">Disconnect this device</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="myDevices" class="hidden rounded-3xl border border-cyan-400/25 bg-slate-900 p-5 shadow-2xl shadow-cyan-950/10 space-y-5">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <p class="text-xs font-bold uppercase tracking-[.18em] text-cyan-300">Package management</p>
+          <h2 class="mt-1 text-2xl font-extrabold">My devices</h2>
+          <p class="mt-1 text-sm text-slate-400">See the devices registered to your package and remove a TV or laptop companion. A registered device may not be online right now.</p>
+        </div>
+        <a href="/login" class="shrink-0 text-xs font-semibold text-cyan-200 underline">Back to portal</a>
+      </div>
+      <div id="devicesOwner" class="hidden rounded-xl border border-slate-700 bg-slate-950/70 p-3 space-y-2">
+        <div class="flex items-center justify-between gap-3">
+          <div class="min-w-0">
+            <p id="devicesPlan" class="text-sm font-semibold text-slate-100"></p>
+            <p id="devicesCount" class="text-xs text-slate-500"></p>
+          </div>
+          <span class="shrink-0 rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-semibold text-emerald-300">Active</span>
+        </div>
+        <div class="flex items-center justify-between gap-3 rounded-lg bg-slate-900 px-3 py-2">
+          <div class="min-w-0"><p class="text-[11px] text-slate-500">Your package code (use it to add a TV or laptop)</p>
+            <p id="devicesVoucherCode" class="font-mono font-bold text-cyan-200 select-all"></p></div>
+          <button id="devicesCopy" type="button" class="shrink-0 rounded-lg bg-slate-800 px-3 py-1.5 text-xs font-semibold text-slate-200">Copy</button>
+        </div>
+      </div>
+      <div id="devicesList" class="space-y-2"></div>
+      <p id="devicesMsg" class="text-sm min-h-[1.25rem] text-slate-400"></p>
+      <form id="addTvForm" class="hidden space-y-3 rounded-2xl border border-violet-400/30 bg-violet-400/5 p-4" autocomplete="off">
+        <div>
+          <h3 class="font-semibold">📺 Add a TV by its MAC address</h3>
+          <p class="mt-1 text-xs text-slate-400">For a TV, game console or streaming stick that <b class="text-slate-200">cannot open the sign-in page</b>. Enter its Wi-Fi (MAC) address once and it connects by itself, with no sign-in. When your package ends the TV is switched off too, and it switches back on automatically when you buy your next package.</p>
+        </div>
+        <label for="tvMac" class="sr-only">TV MAC address</label>
+        <input id="tvMac" type="text" inputmode="text" autocapitalize="characters" spellcheck="false" maxlength="17" placeholder="AA:BB:CC:DD:EE:FF"
+               class="w-full rounded-xl bg-slate-900 border border-slate-700 px-4 py-3 text-lg tracking-wider font-mono text-center focus:outline-none focus:ring-2 focus:ring-violet-400">
+        <label for="tvLabel" class="sr-only">TV name</label>
+        <input id="tvLabel" type="text" maxlength="30" placeholder="Name, e.g. Living room TV (optional)"
+               class="w-full rounded-xl bg-slate-900 border border-slate-700 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400">
+        <button id="tvBtn" type="submit" class="w-full rounded-xl bg-violet-400 text-slate-950 font-bold py-3 disabled:opacity-50">Add TV</button>
+        <details class="text-xs text-slate-400">
+          <summary class="cursor-pointer font-semibold text-violet-200">How do I find my TV's MAC address?</summary>
+          <ul class="mt-2 list-disc space-y-1 pl-5">
+            <li><b class="text-slate-300">Samsung:</b> Settings &gt; General &gt; Network &gt; Network Status, or Support &gt; About this TV &gt; Wi-Fi MAC address.</li>
+            <li><b class="text-slate-300">LG:</b> Settings &gt; All Settings &gt; Connection &gt; Wi-Fi Connection &gt; Advanced Wi-Fi Settings, or General &gt; About this TV.</li>
+            <li><b class="text-slate-300">Android TV / Google TV:</b> Settings &gt; Device Preferences (or System) &gt; About &gt; Status &gt; Wi-Fi MAC address.</li>
+            <li><b class="text-slate-300">Fire TV:</b> Settings &gt; My Fire TV &gt; About &gt; Network. <b class="text-slate-300">Roku:</b> Settings &gt; Network &gt; About.</li>
+            <li><b class="text-slate-300">Anything else:</b> look in Network, About or Status for "Wi-Fi MAC" or "Wireless MAC". Use the <b>Wi-Fi</b> address, not the Ethernet one.</li>
+            <li>If your TV has a <b class="text-slate-300">"Private Wi-Fi address"</b> or "Random MAC" setting, switch it <b>off</b> (or choose "use device MAC") so the address never changes.</li>
+          </ul>
+        </details>
+        <p id="tvMsg" class="min-h-[1.25rem] text-sm"></p>
+      </form>
+
+      <form id="addDeviceForm" class="rounded-2xl border border-slate-700 bg-slate-950/60 p-4 space-y-3">
+        <div>
+          <h3 class="font-semibold">Add a TV or laptop</h3>
+          <p class="mt-1 text-xs text-slate-400">On the TV or laptop you want to add, join this hotspot and open this page, then enter the package code shown above. Or use <a href="/login#reconnectCard" class="font-semibold text-cyan-300 underline">Reconnect with your M-Pesa number</a>. Phones cannot be added as companions; each phone needs its own package.</p>
+        </div>
+        <label for="addDeviceCode" class="sr-only">Package voucher code</label>
+        <input id="addDeviceCode" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="SYN-XXXX-XXXX"
+               class="w-full rounded-xl bg-slate-900 border border-slate-700 px-4 py-3 text-lg tracking-widest font-mono text-center focus:outline-none focus:ring-2 focus:ring-cyan-400">
+        <button id="addDeviceBtn" type="submit" class="w-full rounded-xl bg-cyan-400 text-slate-950 font-bold py-3 disabled:opacity-50">Add this device</button>
+      </form>
+      <p class="text-xs text-slate-500">Device type is identified from the device's browser. The phone slot cannot be removed here. A device may need to reload the portal after removal.</p>
+    </section>
+
+    <div id="buyArea" class="space-y-6">
+      <p class="rounded-xl border border-cyan-400/20 bg-cyan-400/5 px-4 py-3 text-xs text-slate-300">Joining the Wi-Fi with its password connects your device to the hotspot; internet access starts only after you buy a package or enter a valid voucher.</p>
+      <section class="space-y-3">
+        <h2 class="font-semibold px-1">Choose a plan <span id="tapHint" class="hidden text-xs text-slate-500 font-normal">– tap to buy with M-Pesa</span></h2>
+        <div id="tiers" class="grid gap-3"></div>
+        <p class="text-xs text-slate-500 px-1">Each package covers one phone, plus one extra device like a TV or laptop — just enter the same code/number on it. A second phone needs its own package.</p>
+      </section>
+
+      <section id="payCard" class="hidden rounded-2xl bg-slate-900 border border-cyan-400/40 p-5 space-y-3">
+        <h2 id="payTitle" class="font-semibold"></h2>
+        <input id="phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="M-Pesa number e.g. 0712345678"
+               class="w-full rounded-xl bg-slate-950 border border-slate-700 px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-cyan-400">
+        <button id="payBtn" class="w-full rounded-xl bg-emerald-400 text-slate-950 font-bold py-3 active:scale-95 transition disabled:opacity-50">Pay with M-Pesa</button>
+        <p id="payMsg" class="text-sm min-h-[1.25rem] text-center"></p>
+        <p id="smsNote" class="hidden text-xs text-slate-400 text-center">You will get an SMS receipt with your voucher code and expiry time.</p>
+      </section>
+
+      <section id="loginCard" class="rounded-2xl bg-slate-900 border border-slate-800 p-5 space-y-3">
+        <h2 class="font-semibold">Already have a voucher code?</h2>
+        <input id="code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="SYN-XXXX-XXXX"
+               class="w-full rounded-xl bg-slate-950 border border-slate-700 px-4 py-3 text-lg tracking-widest font-mono text-center focus:outline-none focus:ring-2 focus:ring-cyan-400">
+        <button id="connectBtn" class="w-full rounded-xl bg-cyan-400 text-slate-950 font-bold py-3 active:scale-95 transition disabled:opacity-50">Connect</button>
+        <p id="msg" class="text-sm min-h-[1.25rem] text-center"></p>
+      </section>
+
+      <section id="reconnectCard" class="rounded-2xl bg-slate-900 border border-slate-800 p-5 space-y-3">
+        <h2 class="font-semibold">Reconnect a device</h2>
+        <p id="reconnectHelp" class="text-xs text-slate-400">Phones reconnect automatically. For a laptop or TV, enter the M-Pesa number used to pay.</p>
+        <input id="reconnectPhone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="0712345678"
+               class="w-full rounded-xl bg-slate-950 border border-slate-700 px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-cyan-400">
+        <div id="reconnectCodeBox" class="hidden space-y-2">
+          <label for="reconnectCode" class="block text-xs text-slate-400">6-digit code we just texted to your number</label>
+          <input id="reconnectCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="------"
+                 class="w-full rounded-xl bg-slate-950 border border-cyan-400/40 px-4 py-3 text-2xl tracking-[.45em] font-mono text-center focus:outline-none focus:ring-2 focus:ring-cyan-400">
+          <button id="reconnectResend" type="button" class="text-xs font-semibold text-cyan-300 underline disabled:opacity-50 disabled:no-underline">Send a new code</button>
+        </div>
+        <button id="reconnectBtn" class="w-full rounded-xl bg-slate-700 text-slate-100 font-bold py-3 active:scale-95 transition disabled:opacity-50">Reconnect</button>
+        <p id="reconnectMsg" class="text-sm min-h-[1.25rem] text-center"></p>
+      </section>
+
+      <details id="manual" class="rounded-2xl bg-slate-900 border border-slate-800 p-5">
+        <summary class="font-semibold cursor-pointer">Pay manually</summary>
+        <div class="mt-3 space-y-3">
+          <div class="rounded-xl bg-slate-950 border border-slate-800 p-3 text-sm space-y-1">
+            <div class="flex justify-between"><span class="text-slate-400">Method</span><span id="payMethod"></span></div>
+            <div class="flex justify-between"><span class="text-slate-400">Till No.</span><span id="payTill" class="font-mono font-bold text-cyan-300"></span></div>
+            <div class="flex justify-between"><span class="text-slate-400">Name</span><span id="payName"></span></div>
+          </div>
+          <ol id="payHow" class="list-decimal list-inside text-sm text-slate-300 space-y-1"></ol>
+        </div>
+      </details>
+      <p class="text-sm text-slate-400 text-center">Need help? Call <span id="support" class="text-slate-200 font-semibold"></span></p>
+    </div>
+
+    <footer class="text-center text-xs text-slate-600 pb-4">Powered by <a href="https://www.anonymiketech.space" target="_blank" rel="noopener noreferrer" class="underline hover:text-slate-400">anonymiketech</a></footer>
+  </main>
+  <script src="/greeting.js?v=1"></script>
+  <script src="/paypopup.js?v=1"></script>
+  <script src="/connectsound.js?v=1"></script>
+  <script src="/portal.js?v=auto-login"></script>
+</body>
+</html>

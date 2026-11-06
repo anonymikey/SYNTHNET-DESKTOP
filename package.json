@@ -1,0 +1,71 @@
+{
+  "name": "synthnet",
+  "productName": "SYNTHNET",
+  "version": "0.10.0",
+  "description": "SYNTHNET - captive-portal hotspot manager for Windows",
+  "main": "electron/main.js",
+  "author": "SYNTHNET",
+  "license": "UNLICENSED",
+  "scripts": {
+    "app": "electron .",
+    "dist": "electron-builder --win nsis",
+    "start": "node server.js",
+    "hotspot": "node src/hotspot.js apply",
+    "hotspot:status": "node src/hotspot.js status",
+    "hotspot:stop": "node src/hotspot.js stop",
+    "postinstall": "node scripts/fetch-assets.js",
+    "test": "node --test test/sms.test.js test/greeting.test.js test/flows.test.js test/income.test.js test/notifications.test.js test/sound.test.js test/tv.test.js",
+    "release": "node scripts/release.js",
+    "release:notes": "node scripts/release-notes.js",
+    "test:site": "node --test website/test/*.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "koffi": "^2.9.0"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.synthnet.hotspot",
+    "productName": "SYNTHNET",
+    "asar": false,
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron/**",
+      "server.js",
+      "src/**",
+      "admin-ui/**",
+      "public/**",
+      "config/**",
+      "build/icon.png",
+      "scripts/**",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "requestedExecutionLevel": "requireAdministrator"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "artifactName": "SYNTHNET-Setup-${version}.exe"
+    }
+  }
+}
