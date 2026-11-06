@@ -40,9 +40,27 @@ function openProductWebsite() {
   let previous = '';
   try { previous = fs.readFileSync(marker, 'utf8').trim(); } catch {}
   const isNewVersion = previous !== version;
-  const query = isNewVersion ? `?from=installer&release=${encodeURIComponent(version)}` : '?from=app';
+  const query = isNewVersion ? `/release.html?version=${encodeURIComponent(version)}&from=installer` : '/?from=app#download';
   try { fs.writeFileSync(marker, version); } catch {}
-  shell.openExternal(`${WEBSITE_URL}/${query}${isNewVersion ? '#history' : '#download'}`).catch(() => {});
+  shell.openExternal(`${WEBSITE_URL}${query}`).catch(() => {});
+}
+
+function compareVersions(left, right) {
+  const parse = (value) => String(value || '').replace(/^v/i, '').split(/[.-]/).slice(0, 3).map((part) => Number.parseInt(part, 10) || 0);
+  const a = parse(left), b = parse(right);
+  for (let i = 0; i < 3; i += 1) if (a[i] !== b[i]) return a[i] - b[i];
+  return 0;
+}
+
+async function checkForUpdates() {
+  try {
+    const response = await fetch(`${WEBSITE_URL}/api/latest`, { headers: { accept: 'application/json' }, signal: AbortSignal.timeout(8000) });
+    if (!response.ok) return;
+    const payload = await response.json(); const release = payload.release;
+    if (!release || compareVersions(release.version, app.getVersion()) <= 0) return;
+    const choice = await dialog.showMessageBox({ type: 'info', title: 'SYNTHNET update available', message: `SYNTHNET v${release.version} is available.`, detail: 'Update now to get the newest features, fixes, and improvements. Your local data will remain on this computer.', buttons: ['View update', 'Later'], defaultId: 0, cancelId: 1, noLink: true });
+    if (choice.response === 0) shell.openExternal(`${WEBSITE_URL}/release.html?version=${encodeURIComponent(release.version)}&from=update`).catch(() => {});
+  } catch {}
 }
 
 function createWindow() {
@@ -71,7 +89,7 @@ function buildMenus() {
       { label: 'Quit SYNTHNET (stops hotspot)', click: () => quit() }] },
     { label: 'View', submenu: [{ role: 'reload' }, { role: 'toggleDevTools' }] },
     { label: 'Help', submenu: [
-      { label: 'Open SYNTHNET website', click: () => shell.openExternal(WEBSITE_URL) },
+      { label: 'Open SYNTHNET website', click: () => shell.openExternal(`${WEBSITE_URL}/?from=app#download`) },
       { label: 'Contact developer', click: () => shell.openExternal(`mailto:${DEVELOPER_EMAIL}?subject=SYNTHNET%20Desktop%20support`) },
       { label: 'Preview guest portal in browser', click: () => shell.openExternal(`http://localhost:${port}/login`) }
     ] }
@@ -113,6 +131,7 @@ app.whenReady().then(async () => {
   buildMenus();
   createWindow();
   openProductWebsite();
+  setTimeout(checkForUpdates, 3500);
 
   // ORDER MATTERS: the gate must be filtering BEFORE the hotspot exists, so no device ever gets a free-internet moment.
   const gate = require('../src/gate'), hotspot = require('../src/hotspot'), guard = require('../src/guard');
