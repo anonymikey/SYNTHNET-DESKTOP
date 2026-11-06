@@ -3,6 +3,6 @@
   "private": true,
   "version": "1.0.0",
   "description": "Dependency-free SYNTHNET release website",
-  "engines": { "node": "20.x" },
+  "engines": { "node": "26.x" },
   "scripts": { "build": "node build.js", "dev": "node dev-server.js", "dev:mock": "node dev-server.js --mock", "test": "node --test --test-concurrency=1 test/*.test.js" }
 }
