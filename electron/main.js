@@ -1,6 +1,7 @@
-const { app, BrowserWindow, Tray, Menu, dialog, nativeImage, shell } = require('electron');
+const { app, BrowserWindow, Tray, Menu, Notification, dialog, nativeImage, shell } = require('electron');
 const path = require('path'), fs = require('fs'), crypto = require('crypto');
 const { execFile } = require('child_process');
+const updater = require('./updater');
 
 if (!app.requestSingleInstanceLock()) { app.quit(); return; }
 app.setAppUserModelId('com.synthnet.hotspot');
@@ -14,7 +15,8 @@ const ICON = path.join(__dirname, '..', 'build', 'icon.png');
 const WEBSITE_URL = 'https://synthnetdesktop.anonymiketech.space';
 const DEVELOPER_EMAIL = 'anonymiketech@gmail.com';
 
-let win = null, tray = null, quitting = false, port = 80;
+let win = null, tray = null, quitting = false, port = 80, updateTimer = null;
+const UPDATE_MARKER = () => path.join(app.getPath('userData'), '.last-update-notified');
 
 function bootstrapEnv() {
   if (!fs.existsSync(ENV_FILE)) {
@@ -45,22 +47,35 @@ function openProductWebsite() {
   shell.openExternal(`${WEBSITE_URL}${query}`).catch(() => {});
 }
 
-function compareVersions(left, right) {
-  const parse = (value) => String(value || '').replace(/^v/i, '').split(/[.-]/).slice(0, 3).map((part) => Number.parseInt(part, 10) || 0);
-  const a = parse(left), b = parse(right);
-  for (let i = 0; i < 3; i += 1) if (a[i] !== b[i]) return a[i] - b[i];
-  return 0;
+function readLastNotifiedVersion() { try { return fs.readFileSync(UPDATE_MARKER(), 'utf8').trim(); } catch { return ''; } }
+function rememberNotifiedVersion(version) { try { fs.writeFileSync(UPDATE_MARKER(), String(version)); } catch {} }
+function openReleasePage(version) { shell.openExternal(`${WEBSITE_URL}/release?version=${encodeURIComponent(version)}&from=update`).catch(() => {}); }
+
+async function checkForUpdates({ force = false } = {}) {
+  try {
+    const release = await updater.fetchLatestRelease(`${WEBSITE_URL}/api/latest`);
+    const lastNotified = force ? '' : readLastNotifiedVersion();
+    if (!updater.shouldNotify(release, app.getVersion(), lastNotified)) return false;
+    rememberNotifiedVersion(release.version);
+    const title = `SYNTHNET v${release.version} is ready`;
+    const body = 'New features and improvements are available. Click to view the release and update your app.';
+    if (Notification && Notification.isSupported()) {
+      const notice = new Notification({ title, body, icon: ICON, silent: false });
+      notice.on('click', () => openReleasePage(release.version));
+      notice.show();
+    } else {
+      const choice = await dialog.showMessageBox({ type: 'info', title: 'SYNTHNET update available', message: title, detail: body, buttons: ['View update', 'Later'], defaultId: 0, cancelId: 1, noLink: true });
+      if (choice.response === 0) openReleasePage(release.version);
+    }
+    return true;
+  } catch { return false; }
 }
 
-async function checkForUpdates() {
-  try {
-    const response = await fetch(`${WEBSITE_URL}/api/latest`, { headers: { accept: 'application/json' }, signal: AbortSignal.timeout(8000) });
-    if (!response.ok) return;
-    const payload = await response.json(); const release = payload.release;
-    if (!release || compareVersions(release.version, app.getVersion()) <= 0) return;
-    const choice = await dialog.showMessageBox({ type: 'info', title: 'SYNTHNET update available', message: `SYNTHNET v${release.version} is available.`, detail: 'Update now to get the newest features, fixes, and improvements. Your local data will remain on this computer.', buttons: ['View update', 'Later'], defaultId: 0, cancelId: 1, noLink: true });
-    if (choice.response === 0) shell.openExternal(`${WEBSITE_URL}/release?version=${encodeURIComponent(release.version)}&from=update`).catch(() => {});
-  } catch {}
+function startUpdateChecker() {
+  clearInterval(updateTimer);
+  setTimeout(() => checkForUpdates(), 3500);
+  updateTimer = setInterval(() => checkForUpdates(), updater.DEFAULT_INTERVAL_MS);
+  updateTimer.unref();
 }
 
 function createWindow() {
@@ -90,6 +105,7 @@ function buildMenus() {
     { label: 'View', submenu: [{ role: 'reload' }, { role: 'toggleDevTools' }] },
     { label: 'Help', submenu: [
       { label: 'Open SYNTHNET website', click: () => shell.openExternal(`${WEBSITE_URL}/?from=app#download`) },
+      { label: 'Check for updates', click: () => checkForUpdates({ force: true }) },
       { label: 'Contact developer / request a feature', click: () => shell.openExternal(`mailto:${DEVELOPER_EMAIL}?subject=SYNTHNET%20feature%20request%20or%20support`) },
       { label: 'Preview guest portal in browser', click: () => shell.openExternal(`http://localhost:${port}/login`) }
     ] }
@@ -102,6 +118,7 @@ function buildMenus() {
 
 async function quit() {
   if (quitting) return; quitting = true;
+  clearInterval(updateTimer);
   try {
     await require('../src/gate').stop();
     // If the hotspot kept running without the gate, unpaid users would get free internet.
@@ -131,7 +148,7 @@ app.whenReady().then(async () => {
   buildMenus();
   createWindow();
   openProductWebsite();
-  setTimeout(checkForUpdates, 3500);
+  startUpdateChecker();
 
   // ORDER MATTERS: the gate must be filtering BEFORE the hotspot exists, so no device ever gets a free-internet moment.
   const gate = require('../src/gate'), hotspot = require('../src/hotspot'), guard = require('../src/guard');

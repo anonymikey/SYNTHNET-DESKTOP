@@ -16,6 +16,7 @@ Install once, run as Administrator, manage everything from the dashboard.
 3. Starts the **Internet gate** (downloads the WinDivert driver on first run) so unpaid phones reach only the portal.
 4. Renames + starts the Windows hotspot: `SYNTHNET_VOUCHER_HOTSPOT` / `12345678` (change in `.env`).
 5. Opens the dashboard (token entered automatically). The SYNTHNET website opens in the default browser; a first install or version update opens the release history, while a normal launch opens the latest-build section. Closing the window hides it to the tray; **Quit stops the hotspot**.
+6. Checks the private SYNTHNET release API shortly after startup and every six hours thereafter. If a newer published version is available, Windows shows a native notification; clicking it opens the internal SYNTHNET release page without exposing the GitHub repository. The check is non-blocking and silently tolerates offline use. **Help > Check for updates** runs an immediate manual check.
 
 For installation questions or developer contact, email `anonymiketech@gmail.com` or visit `https://synthnetdesktop.anonymiketech.space`.
 
