@@ -1,4 +1,4 @@
-# SYNTHNET Desktop (v0.0.1)
+# SYNTHNET Desktop (v0.0.2)
 
 Install once, run as Administrator, manage everything from the dashboard.
 
@@ -7,7 +7,7 @@ Install once, run as Administrator, manage everything from the dashboard.
 2. In this folder: `npm install` (downloads Electron, koffi, Tailwind).
 3. Test without installing: open **PowerShell as Administrator** here and run `npm run app`.
    Alternatively, run `start.bat` as Administrator for color-coded startup and service logs in the console.
-4. Make the installer: `npm run dist` -> `dist\SYNTHNET-Setup-0.0.1.exe`. The assisted installer lets the user choose the install location and per-user/per-machine mode, creates Desktop and Start menu availability, and asks for Administrator permission because hotspot control requires elevation.
+4. Make the installer: `npm run dist` -> `dist\SYNTHNET-Setup-0.0.2.exe`. The assisted installer lets the user choose the install location and per-user/per-machine mode, creates Desktop and Start menu availability, and asks for Administrator permission because hotspot control requires elevation.
    Windows SmartScreen may warn because the installer is unsigned: More info > Run anyway. The installer uses the SYNTHNET brand artwork and launches the app after setup unless the user clears that option.
 
 ## What happens when SYNTHNET starts

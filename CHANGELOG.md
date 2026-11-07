@@ -4,7 +4,36 @@ All notable changes to SYNTHNET Desktop are documented here.
 
 ## [Unreleased]
 
-<!-- Add plain-language notes under Added, Changed, Fixed, or Security. -->
+
+### Added
+
+**Automatic update notifications.** SYNTHNET now checks the private release service shortly after startup and every six hours thereafter. When a newer version is published, Windows shows a native notification with a direct link to the private SYNTHNET release page.
+
+**Manual update check.** Use **Help → Check for updates** whenever you want to check immediately instead of waiting for the next scheduled check.
+
+**Safe update behavior.** Update checks are non-blocking, tolerate offline use, compare semantic versions correctly, and remember the last notified release so the same update does not interrupt you repeatedly.
+
+**Private release pages.** Update notifications open SYNTHNET’s own release page with the current features, notes, download action, and earlier releases. Users do not need to visit the GitHub repository.
+
+**Developer support and feature requests.** The desktop Help menu now includes a direct contact action for bug reports, ideas, and feature requests at anonymiketech@gmail.com.
+
+**Operator support card.** The admin dashboard now includes a visible “Build with me” contact card so operators can quickly report an issue or suggest an improvement.
+
+**Founder story and product context.** The public website now explains the thought behind SYNTHNET: building something useful from the tools already available, turning a “could this earn money?” idea into a practical local-first hotspot product, and encouraging other operators to make their own connection work harder.
+
+### Changed
+
+**More useful release experience.** The website’s release history and internal release detail pages now provide a clearer path from a new version notification to its notes and installer.
+
+**Responsive website polish.** The public website keeps its dark SYNTHNET visual system across desktop, tablet, and mobile layouts, including the new founder story and release pages.
+
+**Installer continuity.** Existing user data remains in `%APPDATA%\SYNTHNET\data` while users install the new version over the previous version.
+
+### Fixed
+
+**Repeated update prompts.** The desktop app no longer uses a one-time startup-only update check. It now handles future releases consistently across startup, scheduled checks, and manual checks.
+
+**Offline startup resilience.** A failed or unavailable release service cannot prevent the local dashboard, hotspot, or internet gate from starting.
 
 ## [0.0.1] - 2026-11-06
 

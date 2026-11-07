@@ -6,7 +6,7 @@ This guide is written for the owner who wants to publish an update without manua
 
 1. Create an empty GitHub repository and push this folder. Before pushing, run `git status --short` and confirm there is no `.env`, `data/`, `node_modules/`, customer data, API key, or personal phone number.
 2. In GitHub, open **Settings → Actions → General** and set workflow permissions to **Read and write permissions**.
-3. The source starts at version `0.0.1`. Publish the first release by pushing only the tag: `git tag -a v0.0.1 -m "SYNTHNET v0.0.1" && git push origin v0.0.1`.
+3. The first public release was `v0.0.1`. Subsequent releases must use a higher semantic version, such as `v0.0.2`.
 4. Import the repository into Vercel. Set **Root Directory** to `website`.
 5. Set `GITHUB_REPO` to `owner/name` or paste the GitHub repository URL. Set `GITHUB_TOKEN` to a fine-grained read-only token when the repository is private; it is recommended for public repositories to avoid rate limits. Set `SITE_URL` to the final site URL when you have one.
 6. The default hotspot password in `.env.example` is `12345678`. New users must change it before operating a real hotspot because anyone who downloads the installer can see the default.
@@ -16,8 +16,9 @@ This guide is written for the owner who wants to publish an update without manua
 1. Make and test your code changes.
 2. Add plain-language notes under `## [Unreleased]` in `CHANGELOG.md`.
 3. Run `npm test` and `npm run test:site`.
-4. Publish with one command, for example `npm run release -- minor --push`.
-5. The helper updates both package files, promotes the changelog section, commits, tags, and pushes. In GitHub Actions, open **Windows Release → Run workflow**, enter the exact tag such as `v0.0.1`, and start it. The workflow publishes the installer and checksum to a GitHub Release. Vercel reads the latest release automatically; no website redeploy is needed.
+4. Preview the exact release with `npm run release -- 0.0.2 --dry-run`.
+5. Publish the version commit and tag with `npm run release -- 0.0.2 --push`.
+6. In GitHub Actions, open **Windows Release → Run workflow**, enter the exact tag `v0.0.2`, and start it. The workflow publishes the installer and checksum to a GitHub Release. Vercel reads the latest release automatically; no website redeploy is needed.
 
 Use `--dry-run` to inspect a release without changing files. Use `npm run release:notes -- 0.0.1` to print a release section.
 
