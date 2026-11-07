@@ -53,7 +53,7 @@
   const tour = $('#site-tour');
   const siteTourCard = $('#site-tour-card');
   // Keep the callout above both the dimming layer and the highlighted target.
-  if (siteTourCard && siteTourCard.parentElement !== document.body) document.body.appendChild(siteTourCard);
+  if (siteTourCard) { if (siteTourCard.parentElement !== document.body) document.body.appendChild(siteTourCard); siteTourCard.hidden = true; }
   const tourSteps = [
     { target: '#features', title: 'What SYNTHNET controls', text: 'SYNTHNET turns a Windows PC into a local-first paid Wi-Fi control layer for hotspot access, packages, payments and devices.' },
     { target: '#how-it-works', title: 'How the flow works', text: 'A customer joins the hotspot, reaches the local portal, completes a payment or voucher flow, and receives access for the active package.' },
@@ -72,6 +72,7 @@
   function finishSiteTour() {
     if (!tour) return;
     tour.hidden = true;
+    if (siteTourCard) siteTourCard.hidden = true;
     tourActive = false; document.documentElement.classList.remove('tour-scroll-locked'); document.body.classList.remove('tour-scroll-locked');
     document.querySelectorAll('.site-tour-target').forEach((node) => node.classList.remove('site-tour-target'));
     try { localStorage.setItem('synthnetWebsiteTour.v1', 'done'); } catch {}
@@ -87,6 +88,7 @@
     $('#site-tour-back').disabled = tourIndex === 0; $('#site-tour-back').classList.toggle('is-disabled', tourIndex === 0);
     $('#site-tour-next').textContent = tourIndex === tourSteps.length - 1 ? 'Finish tour' : 'Next';
     requestAnimationFrame(() => requestAnimationFrame(positionSiteTourCard));
+    setTimeout(positionSiteTourCard, 100);
   }
   function alignSiteTourTarget(target) {
     const rect = target.getBoundingClientRect();
@@ -106,7 +108,7 @@
     card.style.setProperty('--arrow-left', `${arrowLeft}px`);
     card.style.top = `${top}px`; card.style.left = `${left}px`;
   }
-  function startSiteTour() { if (!tour) return; tourActive = true; document.documentElement.classList.add('tour-scroll-locked'); document.body.classList.add('tour-scroll-locked'); tour.hidden = false; showSiteTourStep(0); }
+  function startSiteTour() { if (!tour) return; tourActive = true; document.documentElement.classList.add('tour-scroll-locked'); document.body.classList.add('tour-scroll-locked'); tour.hidden = false; if (siteTourCard) siteTourCard.hidden = false; showSiteTourStep(0); }
   document.querySelectorAll('.tour-launch').forEach((button) => button.addEventListener('click', startSiteTour));
   if ($('#site-tour-skip')) $('#site-tour-skip').addEventListener('click', finishSiteTour);
   if ($('#site-tour-back')) $('#site-tour-back').addEventListener('click', () => showSiteTourStep(tourIndex - 1));

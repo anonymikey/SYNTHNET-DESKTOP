@@ -149,7 +149,7 @@
   /* ---------- First-run operator tour ---------- */
   const tourCard = $('tourCard');
   // Keep the callout above both the dimming layer and the highlighted dashboard target.
-  if (tourCard && tourCard.parentElement !== document.body) document.body.appendChild(tourCard);
+  if (tourCard) { if (tourCard.parentElement !== document.body) document.body.appendChild(tourCard); tourCard.classList.add('hidden'); }
   const tourSteps = [
     { target: '#statHot', title: 'Start with the gate', text: 'Confirm Hotspot and Internet gate are ON before customers connect. If the gate is unavailable, SYNTHNET keeps the hotspot stopped to prevent free internet leaks.' },
     { target: '#clientsSection', title: 'Watch connected devices', text: 'This is where you see phones, TVs and laptops, their package state, time remaining, and the controls to revoke or award access.' },
@@ -167,6 +167,7 @@
   }
   function finishTour() {
     $('tourOverlay').classList.add('hidden');
+    if (tourCard) tourCard.classList.add('hidden');
     tourActive = false; document.documentElement.classList.remove('tour-scroll-locked'); document.body.classList.remove('tour-scroll-locked');
     document.querySelectorAll('.tour-target').forEach((node) => node.classList.remove('tour-target'));
     try { localStorage.setItem('synthnetAdminTour.v1', 'done'); } catch {}
@@ -183,6 +184,7 @@
     $('tourBack').disabled = tourIndex === 0; $('tourBack').classList.toggle('opacity-40', tourIndex === 0);
     $('tourNext').textContent = tourIndex === tourSteps.length - 1 ? 'Finish tour' : 'Next';
     requestAnimationFrame(() => requestAnimationFrame(positionTourCard));
+    setTimeout(positionTourCard, 100);
   }
   function alignTourTarget(target) {
     const rect = target.getBoundingClientRect();
@@ -201,7 +203,7 @@
     card.style.setProperty('--arrow-left', `${arrowLeft}px`);
     card.style.top = `${top}px`; card.style.left = `${left}px`;
   }
-  function startTour() { tourActive = true; document.documentElement.classList.add('tour-scroll-locked'); document.body.classList.add('tour-scroll-locked'); $('tourOverlay').classList.remove('hidden'); showTourStep(0); }
+  function startTour() { tourActive = true; document.documentElement.classList.add('tour-scroll-locked'); document.body.classList.add('tour-scroll-locked'); $('tourOverlay').classList.remove('hidden'); if (tourCard) tourCard.classList.remove('hidden'); showTourStep(0); }
   $('tourBtn').onclick = startTour;
   $('tourSkip').onclick = finishTour;
   $('tourBack').onclick = () => showTourStep(tourIndex - 1);
