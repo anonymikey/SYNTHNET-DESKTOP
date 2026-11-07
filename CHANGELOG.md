@@ -6,6 +6,11 @@ All notable changes to SYNTHNET Desktop are documented here.
 
 <!-- Add plain-language notes under Unreleased. -->
 
+## [0.0.4] - 2026-11-07
+
+
+<!-- Add plain-language notes under Unreleased. -->
+
 ### Added
 
 **In-app Courtney Tech setup.** Operators can now enter their own Courtney Tech API key, API secret, and numeric payment account ID directly in the desktop Admin dashboard. Values are validated, written only to the local `.env`, applied immediately, and never returned to the dashboard or public website.
