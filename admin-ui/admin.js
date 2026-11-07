@@ -248,6 +248,20 @@
     }));
   }
 
+  async function loadUpdateStatus() {
+    const state = $('updateState'), message = $('updateMessage'), open = $('updateOpenBtn');
+    try {
+      const d = await api('/update');
+      $('installedVersion').textContent = `v${d.currentVersion}`;
+      $('latestVersion').textContent = d.latest ? `v${d.latest.version}` : 'Unavailable';
+      open.classList.toggle('hidden', !d.updateAvailable);
+      if (d.updateAvailable) { state.textContent = 'UPDATE READY'; state.className = 'status-pill is-warn'; message.textContent = `${d.latest.name} is ready. Open the release page to download it. Your local settings and operator data are preserved during the update.`; open.onclick = () => window.open(d.releaseUrl, '_blank', 'noopener,noreferrer'); }
+      else if (d.unavailable) { state.textContent = 'CHECK LATER'; state.className = 'status-pill is-checking'; message.textContent = d.message; }
+      else { state.textContent = 'UP TO DATE'; state.className = 'status-pill is-good'; message.textContent = 'You are running the latest SYNTHNET release. We will keep checking when the dashboard opens.'; }
+    } catch (e) { state.textContent = 'CHECK FAILED'; state.className = 'status-pill is-warn'; message.textContent = 'The update service could not be reached. Your dashboard and local data are safe; try again shortly.'; }
+  }
+  $('updateRefreshBtn').onclick = () => loadUpdateStatus();
+
   /* ---------- Portal content & prices ---------- */
   function fileToDataUrl(file) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file); }); }
 
@@ -493,13 +507,14 @@
   async function start() {
     try { await api('/clients'); } catch (e) { return lock(e.message); }
     $('gate').classList.add('hidden'); $('app').classList.remove('hidden');
-    await loadTiers(); loadClients(); loadVouchers(); loadHotspot(true); loadPayments().catch(() => {});
+    await loadTiers(); loadClients(); loadVouchers(); loadHotspot(true); loadPayments().catch(() => {}); loadUpdateStatus();
     loadPortalContent().catch((e) => toast(e.message)); loadTheme().catch((e) => toast(e.message));
     SynthAdmin.onStart.forEach((fn) => { try { fn(); } catch (e) { console.error(e); } });
     try { if (localStorage.getItem('synthnetAdminTour.v1') !== 'done') setTimeout(startTour, 700); } catch { setTimeout(startTour, 700); }
     timers.push(setInterval(() => { if (!document.hidden) loadClients().catch(() => {}); }, 5000));
     timers.push(setInterval(() => { if (!document.hidden) loadHotspot(false); }, 30000));
     timers.push(setInterval(() => { if (!document.hidden) loadPayments().catch(() => {}); }, 15000));
+    timers.push(setInterval(() => { if (!document.hidden) loadUpdateStatus().catch(() => {}); }, 60000));
   }
   $('tokenBtn').onclick = async () => {
     const button = $('tokenBtn');

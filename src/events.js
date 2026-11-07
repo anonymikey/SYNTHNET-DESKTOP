@@ -23,6 +23,7 @@ const CAT_IDS = new Set(CATEGORIES.map((c) => c.id));
 
 // Shown once when the app starts on a new version (the "updates" notification).
 const WHATS_NEW = {
+  '0.0.4': 'In-app Courtney Tech payment setup, official WhatsApp and Telegram update links, a redesigned live status page, and safer update messaging that confirms local operator data is preserved.',
   '0.10.0': 'Add a TV by its MAC address in My devices: TVs that cannot open the sign-in page now connect by themselves, are cut off when the package ends, and switch back on when the customer buys again. Admins can also link a TV from the dashboard.',
   '0.9.0': 'SMS messaging, a time-of-day portal greeting, an animated payment popup with server-side confirmation, phone-number reconnect with an SMS code, a better My devices page, the income, earnings and profit dashboard, and this notification bell.'
 };

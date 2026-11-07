@@ -28,6 +28,8 @@ const { setEnv } = require('./envfile');
 
 const router = express.Router();
 const PLACEHOLDER = 'change-me-please';
+const CURRENT_VERSION = require('../package.json').version;
+const WEBSITE_URL = 'https://synthnetdesktop.anonymiketech.space';
 const UI = path.join(__dirname, '..', 'admin-ui');
 const isMac = (s) => /^[0-9a-f]{2}(-[0-9a-f]{2}){5}$/i.test(s || '');
 
@@ -216,6 +218,22 @@ router.post('/api/admin/award', async (req, res) => {
 router.get('/api/admin/payments', (_req, res) => res.json({ enabled: pay.enabled(), payments: pay.list(50) }));
 router.get('/api/admin/pay/accounts', async (_req, res) => {
   try { res.json({ accounts: await pay.accounts() }); } catch (e) { res.status(502).json({ error: e.message }); }
+});
+
+router.get('/api/admin/update', async (_req, res) => {
+  const currentVersion = CURRENT_VERSION;
+  try {
+    const response = await fetch(`${WEBSITE_URL}/api/latest`, { headers: { accept: 'application/json' }, signal: AbortSignal.timeout(8000) });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json();
+    const latest = payload && payload.release;
+    if (!latest || !latest.version) throw new Error('Latest release was not available.');
+    const releaseUrl = `${WEBSITE_URL}/release?version=${encodeURIComponent(latest.version)}&from=app-update`;
+    const compare = (a, b) => String(a).split('.').map(Number).reduce((r, n, i) => r || (n - (Number(String(b).split('.')[i]) || 0)), 0);
+    res.json({ currentVersion, latest: { version: latest.version, name: latest.name || `SYNTHNET v${latest.version}`, publishedAt: latest.publishedAt || null }, updateAvailable: compare(latest.version.replace(/^v/, ''), currentVersion.replace(/^v/, '')) > 0, releaseUrl, dataDirectory: 'Your local SYNTHNET data is kept in the Windows application data folder during updates.' });
+  } catch (e) {
+    res.json({ currentVersion, latest: null, updateAvailable: false, unavailable: true, message: 'Could not reach the public release service. Your local app is still running normally.', dataDirectory: 'Your local SYNTHNET data is kept in the Windows application data folder during updates.' });
+  }
 });
 
 router.get('/api/admin/hotspot', async (_req, res) => res.json({ ...(await hotspot.run('status')), defaults: hotspot.defaults() }));

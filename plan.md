@@ -34,3 +34,8 @@ Dark, premium glass UI with a restrained cyan/emerald/violet aurora and a produc
 - **Brand voice:** direct and practical: “Turn any Windows PC into a paid Wi-Fi hotspot.” “Your customers get online in seconds. You stay in control.”
 - **Wordmark:** rounded gradient square containing a bold S beside SYNTHNET Desktop.
 - **Signature brand color:** electric cyan `#22d3ee`.
+
+## v0.0.4 status and update extension
+Use the same Aurora control-room language for the public status page: a calm operational banner, service cards, compact uptime metrics, and a vertical incident timeline that is readable at a glance. The reference pattern is adapted for SYNTHNET rather than copied: no external branding, no fake incident history, and no customer or credential data. Incidents are returned by a no-cache public API and can be supplied through the deployment’s `STATUS_INCIDENTS_JSON` setting.
+
+The desktop update flow keeps the existing local-first architecture. The startup dialog and Admin notification center announce newer releases, while the persistent **Updates & data safety** panel shows installed/latest versions and opens the private release page. The Electron installer continues to use `%APPDATA%\SYNTHNET\data` for settings, packages, payments, notifications, and other operator state; the post-update dialog confirms that location after a version change.

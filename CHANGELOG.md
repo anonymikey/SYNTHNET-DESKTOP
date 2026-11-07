@@ -17,6 +17,8 @@ All notable changes to SYNTHNET Desktop are documented here.
 
 **Official update communities.** The desktop support card and public sharing page now link to the SYNTHNET WhatsApp channel, WhatsApp community, and Telegram channel with real brand icons.
 
+**Live status and safer update visibility.** The public status page now has a reference-inspired service overview, uptime summary, and live incident timeline. The desktop app announces newer releases at startup, in the notification center, and in a dedicated Updates & data safety panel. After an upgrade, it confirms that local operator data was preserved.
+
 ## [0.0.3] - 2026-11-07
 
 

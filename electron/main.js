@@ -17,6 +17,7 @@ const DEVELOPER_EMAIL = 'anonymiketech@gmail.com';
 
 let win = null, tray = null, quitting = false, port = 80, updateTimer = null;
 const UPDATE_MARKER = () => path.join(app.getPath('userData'), '.last-update-notified');
+const RUNNING_VERSION_MARKER = () => path.join(app.getPath('userData'), '.last-running-version');
 
 function bootstrapEnv() {
   if (!fs.existsSync(ENV_FILE)) {
@@ -50,17 +51,21 @@ function openProductWebsite() {
 
 function readLastNotifiedVersion() { try { return fs.readFileSync(UPDATE_MARKER(), 'utf8').trim(); } catch { return ''; } }
 function rememberNotifiedVersion(version) { try { fs.writeFileSync(UPDATE_MARKER(), String(version)); } catch {} }
+function readPreviousRunningVersion() { try { return fs.readFileSync(RUNNING_VERSION_MARKER(), 'utf8').trim(); } catch { return ''; } }
+function rememberRunningVersion(version) { try { fs.writeFileSync(RUNNING_VERSION_MARKER(), String(version)); } catch {} }
 function openReleasePage(version) { shell.openExternal(`${WEBSITE_URL}/release?version=${encodeURIComponent(version)}&from=update`).catch(() => {}); }
 function openStatusPage() { shell.openExternal(`${WEBSITE_URL}/status?from=app&appVersion=${encodeURIComponent(app.getVersion())}&platform=${encodeURIComponent(process.platform)}&arch=${encodeURIComponent(process.arch)}`).catch(() => {}); }
 
 async function checkForUpdates({ force = false } = {}) {
   try {
     const release = await updater.fetchLatestRelease(`${WEBSITE_URL}/api/latest`);
-    const lastNotified = force ? '' : readLastNotifiedVersion();
-    if (!updater.shouldNotify(release, app.getVersion(), lastNotified)) return false;
-    rememberNotifiedVersion(release.version);
+    if (!updater.shouldNotify(release, app.getVersion(), '')) return false;
+    if (readLastNotifiedVersion() !== release.version) {
+      rememberNotifiedVersion(release.version);
+      require('../src/events').emit({ category: 'system', level: 'info', title: `SYNTHNET v${release.version} is ready`, message: 'Open the Updates & data safety panel or the private release page to install it. Local operator data is preserved.', dedupeKey: 'update-ready:' + release.version, dedupeMs: updater.DEFAULT_INTERVAL_MS, dedupeMode: 'skip' });
+    }
     const title = `SYNTHNET v${release.version} is ready`;
-    const body = 'New features, performance improvements, and fixes are available. Open the private SYNTHNET release page to download the latest installer.';
+    const body = 'New features, performance improvements, and fixes are available. Your settings, packages, payment records, and notifications remain in the local SYNTHNET data folder during the update.';
     const choice = await dialog.showMessageBox(win || undefined, { type: 'info', title: 'SYNTHNET update available', message: title, detail: body, buttons: ['View update', 'Later'], defaultId: 0, cancelId: 1, noLink: true });
     if (choice.response === 0) openReleasePage(release.version);
     return true;
@@ -75,6 +80,16 @@ function startUpdateChecker() {
   updateTimer.unref();
 }
 
+function showPostUpdateCongratulations(previousVersion) {
+  if (!previousVersion || updater.compareVersions(app.getVersion(), previousVersion) <= 0) return;
+  setTimeout(() => dialog.showMessageBox(win || undefined, {
+    type: 'info', title: `Congratulations — SYNTHNET v${app.getVersion()} is ready`,
+    message: 'Your SYNTHNET update completed successfully.',
+    detail: `You upgraded from v${previousVersion} to v${app.getVersion()}. Your local settings, packages, payment records, notification history, and operator data were kept safe in the SYNTHNET application data folder. Enjoy the new release!`,
+    buttons: ['Continue'], noLink: true
+  }).catch(() => {}), 1800);
+}
+
 function createWindow() {
   win = new BrowserWindow({
     width: 1200, height: 820, minWidth: 720, title: 'SYNTHNET', backgroundColor: '#020617', icon: ICON,
@@ -83,8 +98,8 @@ function createWindow() {
   const url = `http://localhost:${port}/admin#t=${encodeURIComponent(process.env.ADMIN_TOKEN)}`;
   const load = () => win.loadURL(url).catch(() => {});
   win.webContents.on('did-fail-load', () => setTimeout(load, 1500));
-  win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
-  win.webContents.on('will-navigate', (e, u) => { if (!u.startsWith(`http://localhost:${port}/`)) e.preventDefault(); });
+  win.webContents.setWindowOpenHandler(({ url }) => { if (url.startsWith(WEBSITE_URL)) shell.openExternal(url).catch(() => {}); return { action: 'deny' }; });
+  win.webContents.on('will-navigate', (e, u) => { if (!u.startsWith(`http://localhost:${port}/`)) { e.preventDefault(); if (u.startsWith(WEBSITE_URL)) shell.openExternal(u).catch(() => {}); } });
   win.on('close', (e) => { if (!quitting) { e.preventDefault(); win.hide(); } });
   load();
 }
@@ -129,6 +144,8 @@ app.on('window-all-closed', () => {});
 app.on('second-instance', showWindow);
 
 app.whenReady().then(async () => {
+  const previousRunningVersion = readPreviousRunningVersion();
+  rememberRunningVersion(app.getVersion());
   if (process.platform === 'win32' && !(await isAdmin())) {
     dialog.showErrorBox('Administrator required', 'SYNTHNET controls the Windows hotspot and network filter.\nRight-click SYNTHNET and choose "Run as administrator".');
     return app.exit(1);
@@ -146,6 +163,7 @@ app.whenReady().then(async () => {
   buildMenus();
   createWindow();
   openProductWebsite();
+  showPostUpdateCongratulations(previousRunningVersion);
   startUpdateChecker();
 
   // ORDER MATTERS: the gate must be filtering BEFORE the hotspot exists, so no device ever gets a free-internet moment.

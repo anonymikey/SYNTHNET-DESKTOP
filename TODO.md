@@ -13,3 +13,6 @@
 - [x] Manual launch: create and push the annotated `v0.0.1` tag, then run the **Windows Release** workflow with that tag so GitHub Actions builds and publishes the installer.
 - [ ] Manual release verification: install the published Windows artifact, confirm UAC, shortcut behavior, native icon, dashboard launch, browser handoff, and hotspot startup on a clean Windows machine.
 - [ ] Optional signing: configure `WIN_CSC_LINK` and `WIN_CSC_KEY_PASSWORD` before public distribution to reduce SmartScreen warnings.
+- [x] Live status redesign: add a reference-inspired operational overview, uptime metrics, no-cache service metadata, and a responsive incident timeline without exposing credentials or customer data.
+- [x] Update visibility: show newer-release alerts at startup, persist the update event in the Admin notification center, and add an Updates & data safety panel with a private release-page action.
+- [x] Update safety confirmation: keep operator state under the persistent Windows application data directory and show a congratulations dialog after a completed version upgrade.
