@@ -51,6 +51,9 @@
   const year = $('#year'); if (year) year.textContent = String(new Date().getFullYear());
 
   const tour = $('#site-tour');
+  const siteTourCard = $('#site-tour-card');
+  // Keep the callout above both the dimming layer and the highlighted target.
+  if (siteTourCard && siteTourCard.parentElement !== document.body) document.body.appendChild(siteTourCard);
   const tourSteps = [
     { target: '#features', title: 'What SYNTHNET controls', text: 'SYNTHNET turns a Windows PC into a local-first paid Wi-Fi control layer for hotspot access, packages, payments and devices.' },
     { target: '#how-it-works', title: 'How the flow works', text: 'A customer joins the hotspot, reaches the local portal, completes a payment or voucher flow, and receives access for the active package.' },

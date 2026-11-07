@@ -147,6 +147,9 @@
   function say2(id, text, ok) { const m = $(id); m.textContent = text; m.className = 'text-sm min-h-[1.25rem] ' + (ok ? 'text-emerald-400' : 'text-rose-400'); }
 
   /* ---------- First-run operator tour ---------- */
+  const tourCard = $('tourCard');
+  // Keep the callout above both the dimming layer and the highlighted dashboard target.
+  if (tourCard && tourCard.parentElement !== document.body) document.body.appendChild(tourCard);
   const tourSteps = [
     { target: '#statHot', title: 'Start with the gate', text: 'Confirm Hotspot and Internet gate are ON before customers connect. If the gate is unavailable, SYNTHNET keeps the hotspot stopped to prevent free internet leaks.' },
     { target: '#clientsSection', title: 'Watch connected devices', text: 'This is where you see phones, TVs and laptops, their package state, time remaining, and the controls to revoke or award access.' },
