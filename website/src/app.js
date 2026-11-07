@@ -55,10 +55,10 @@
   // Keep the callout above both the dimming layer and the highlighted target.
   if (siteTourCard) { if (siteTourCard.parentElement !== document.body) document.body.appendChild(siteTourCard); siteTourCard.hidden = true; }
   const tourSteps = [
-    { target: '#features', title: 'What SYNTHNET controls', text: 'SYNTHNET turns a Windows PC into a local-first paid Wi-Fi control layer for hotspot access, packages, payments and devices.' },
-    { target: '#how-it-works', title: 'How the flow works', text: 'A customer joins the hotspot, reaches the local portal, completes a payment or voucher flow, and receives access for the active package.' },
-    { target: '#download', title: 'Get the current build', text: 'The download card checks the official release service and links to the current Windows installer and private release details.' },
-    { target: '#history', title: 'Read every release', text: 'Release history explains new features, fixes and performance improvements without sending visitors to the source repository.' }
+    { target: '#features', anchor: '#features .section-heading h2', title: 'What SYNTHNET controls', text: 'SYNTHNET turns a Windows PC into a local-first paid Wi-Fi control layer for hotspot access, packages, payments and devices.' },
+    { target: '#how-it-works', anchor: '#how-it-works .section-heading h2', title: 'How the flow works', text: 'A customer joins the hotspot, reaches the local portal, completes a payment or voucher flow, and receives access for the active package.' },
+    { target: '#download', anchor: '#download .download-card h2', title: 'Get the current build', text: 'The download card checks the official release service and links to the current Windows installer and private release details.' },
+    { target: '#history', anchor: '#history .inline-heading h2', title: 'Read every release', text: 'Release history explains new features, fixes and performance improvements without sending visitors to the source repository.' }
   ];
   let tourIndex = 0;
   let tourActive = false;
@@ -80,9 +80,10 @@
   }
   function showSiteTourStep(index) {
     tourIndex = Math.max(0, Math.min(index, tourSteps.length - 1));
-    const step = tourSteps[tourIndex], target = document.querySelector(step.target);
+    const step = tourSteps[tourIndex], target = document.querySelector(step.target), anchor = document.querySelector(step.anchor) || target;
     document.querySelectorAll('.site-tour-target').forEach((node) => node.classList.remove('site-tour-target'));
-    if (target) { target.classList.add('site-tour-target'); alignSiteTourTarget(target); }
+    if (target) target.classList.add('site-tour-target');
+    if (anchor) alignSiteTourTarget(anchor);
     $('#site-tour-step').textContent = `SYNTHNET TOUR · ${tourIndex + 1} OF ${tourSteps.length}`;
     $('#site-tour-title').textContent = step.title; $('#site-tour-text').textContent = step.text;
     $('#site-tour-back').disabled = tourIndex === 0; $('#site-tour-back').classList.toggle('is-disabled', tourIndex === 0);
@@ -96,7 +97,8 @@
     window.scrollTo({ top: desiredTop, behavior: 'auto' });
   }
   function positionSiteTourCard() {
-    const card = $('#site-tour-card'), target = document.querySelector(tourSteps[tourIndex].target);
+    const card = $('#site-tour-card'), step = tourSteps[tourIndex];
+    const target = document.querySelector(step.anchor) || document.querySelector(step.target);
     if (!card || !target) return;
     const rect = target.getBoundingClientRect(), gap = 18, margin = 16;
     const cardRect = card.getBoundingClientRect();
