@@ -1,4 +1,4 @@
-# SYNTHNET Desktop (v0.0.2)
+# SYNTHNET Desktop (v0.0.4)
 
 Install once, run as Administrator, manage everything from the dashboard.
 
@@ -35,15 +35,15 @@ SYNTHNET is integrated with the providers, but every operator must use their own
 
 ### M-Pesa purchase inside the portal (Courtney Tech)
 1. Create or manage your own payment account at https://courtneytech.xyz/.
-2. Open **File > Edit settings (.env)** in SYNTHNET.
-3. Enter the API key, API secret, and numeric payment account ID below, save the file, and restart SYNTHNET.
-4. In Admin, press **Test Courtney Tech connection**. Copy one of the returned account IDs into `COURTNEYTECH_ACCOUNT_ID`, save, restart, and test again.
+2. Open the desktop Admin dashboard and scroll to **M-Pesa payments**.
+3. Enter your Courtney Tech API key, API secret, and numeric payment account ID in **Save payment credentials**.
+4. Press **Test Courtney Tech connection** to confirm the account. The credentials are written directly to this computer’s local `.env` and are applied without displaying them back in the dashboard.
 
 Never paste these credentials into the website, GitHub, Vercel, WhatsApp, Telegram, screenshots, or support email:
 ```
 COURTNEYTECH_API_KEY=...        # from courtneytech.xyz > API Keys
 COURTNEYTECH_API_SECRET=...
-COURTNEYTECH_ACCOUNT_ID=...     # numeric ID shown by the Admin connection test
+COURTNEYTECH_ACCOUNT_ID=...     # numeric payment account ID from Courtney Tech
 ```
 Flow: tenant taps **Get this package**, enters their M-Pesa number, gets the STK prompt, and the portal polls `POST /v2/status` every ~5 s.
 On `completed` the buyer's IP is whitelisted in the gate instantly. No voucher code is needed.

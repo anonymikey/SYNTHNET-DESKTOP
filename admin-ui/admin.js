@@ -446,6 +446,19 @@
     catch (e) { o.textContent = '⚠ ' + e.message; }
   };
 
+  $('courtneyCredentialsForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const button = $('courtneyCredentialsSave'), message = $('courtneyCredentialsMsg');
+    button.disabled = true; message.className = 'min-h-[1.25rem] text-xs text-slate-400'; message.textContent = 'Saving locally…';
+    try {
+      const result = await api('/pay/credentials', { method: 'POST', body: { apiKey: $('courtneyApiKey').value, apiSecret: $('courtneyApiSecret').value, accountId: $('courtneyAccountId').value } });
+      $('courtneyApiKey').value = ''; $('courtneyApiSecret').value = '';
+      message.className = 'min-h-[1.25rem] text-xs text-emerald-300'; message.textContent = result.message || 'Saved locally. Test the connection below.';
+      await loadPayments();
+    } catch (e) { message.className = 'min-h-[1.25rem] text-xs text-rose-300'; message.textContent = e.message; }
+    finally { button.disabled = false; }
+  });
+
   $('adminTokenForm').addEventListener('submit', async (event) => {
     event.preventDefault();
     const nextToken = $('newAdminToken').value;

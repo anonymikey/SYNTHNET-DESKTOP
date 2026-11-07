@@ -24,6 +24,7 @@ const { normPhone } = require('./phone');
 const { portal, savePortal, resolveTheme, DATA_DIR } = require('./config');
 const { TEMPLATES, IDS, WEEKDAY_NAMES } = require('./themes');
 const themeImages = require('./themeImages');
+const { setEnv } = require('./envfile');
 
 const router = express.Router();
 const PLACEHOLDER = 'change-me-please';
@@ -106,6 +107,26 @@ router.post('/api/admin/security/admin-token', (req, res) => {
   } catch (e) {
     console.error('[admin] Could not save admin password:', e.message);
     res.status(500).json({ error: 'Could not save the new password. Check the settings file permissions and try again.' });
+  }
+});
+
+router.post('/api/admin/pay/credentials', (req, res) => {
+  const body = req.body || {};
+  const key = typeof body.apiKey === 'string' ? body.apiKey.trim() : '';
+  const secret = typeof body.apiSecret === 'string' ? body.apiSecret.trim() : '';
+  const account = typeof body.accountId === 'string' ? body.accountId.trim() : String(body.accountId || '').trim();
+  if (!key || !secret || !/^\d+$/.test(account) || Number(account) < 1 || Number(account) > Number.MAX_SAFE_INTEGER)
+    return res.status(400).json({ error: 'Enter the Courtney Tech API key, API secret, and a positive numeric payment account ID.' });
+  if ([key, secret, account].some((value) => /["\\\r\n]/.test(value) || !/^[\x20-\x7E]+$/.test(value)))
+    return res.status(400).json({ error: 'Credentials contain unsupported characters. Paste the values exactly as provided by Courtney Tech.' });
+  try {
+    setEnv('COURTNEYTECH_API_KEY', key);
+    setEnv('COURTNEYTECH_API_SECRET', secret);
+    setEnv('COURTNEYTECH_ACCOUNT_ID', account);
+    res.json({ ok: true, enabled: pay.enabled(), message: 'Courtney Tech credentials saved locally. Test the connection below.' });
+  } catch (e) {
+    console.error('[admin] Could not save Courtney Tech credentials:', e.message);
+    res.status(500).json({ error: 'Could not save the credentials. Check the local settings file permissions and try again.' });
   }
 });
 
