@@ -12,7 +12,8 @@ function setEnv(key, value) {
   const line = `${key}="${value}"`;
   const re = new RegExp(`^[ \\t]*${key}[ \\t]*=.*$`, 'm');
   const updated = re.test(contents) ? contents.replace(re, () => line) : `${contents}${contents && !contents.endsWith('\n') ? '\n' : ''}${line}\n`;
-  fs.writeFileSync(file, updated);
+  fs.writeFileSync(file, updated, { mode: 0o600 });
+  try { fs.chmodSync(file, 0o600); } catch { /* Windows ACLs govern access on Windows. */ }
   process.env[key] = value;
 }
 module.exports = { setEnv, envPath };

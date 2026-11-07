@@ -17,7 +17,7 @@
     s.textContent = status.configured ? 'connected' : 'not set up';
     s.className = 'ml-1 rounded-full px-2 py-0.5 text-xs font-semibold ' + (status.configured ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300');
     $('smsSender').value = status.senderId || '';
-    $('smsToken').placeholder = status.tokenHint ? `Token saved (${status.tokenHint}). Paste a new one to replace it.` : 'API token';
+    $('smsToken').placeholder = status.configured ? 'Token saved securely; paste a new token to replace it.' : 'API token from sms.ots.co.ke';
     if (!status.configured) $('smsConn').open = true;
     renderStats(status.stats);
   }

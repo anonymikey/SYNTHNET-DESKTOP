@@ -9,7 +9,7 @@ const router = express.Router();
 const fail = (res, e, code = 400) => res.status(code).json({ error: e.message || String(e) });
 
 const overview = () => ({
-  configured: sms.configured(), tokenHint: sms.tokenHint(), senderId: sms.cfg().sender,
+  configured: sms.configured(), senderConfigured: Boolean(sms.cfg().sender), senderId: sms.cfg().sender,
   settings: notify.settings(), labels: notify.LABELS, kinds: notify.KINDS, placeholders: notify.PLACEHOLDERS, stats: sms.stats()
 });
 

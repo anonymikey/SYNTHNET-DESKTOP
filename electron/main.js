@@ -21,8 +21,9 @@ const UPDATE_MARKER = () => path.join(app.getPath('userData'), '.last-update-not
 function bootstrapEnv() {
   if (!fs.existsSync(ENV_FILE)) {
     const tpl = fs.readFileSync(path.join(__dirname, '..', 'config', 'env.template'), 'utf8');
-    fs.writeFileSync(ENV_FILE, tpl.replace('ADMIN_TOKEN=change-me-please', 'ADMIN_TOKEN=' + crypto.randomBytes(24).toString('hex')));
+    fs.writeFileSync(ENV_FILE, tpl.replace('ADMIN_TOKEN=change-me-please', 'ADMIN_TOKEN=' + crypto.randomBytes(24).toString('hex')), { mode: 0o600 });
   }
+  try { fs.chmodSync(ENV_FILE, 0o600); } catch { /* Windows ACLs govern access on Windows. */ }
   require('dotenv').config({ path: ENV_FILE });
 }
 

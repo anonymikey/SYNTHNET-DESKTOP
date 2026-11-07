@@ -14,7 +14,7 @@
     "hotspot:status": "node src/hotspot.js status",
     "hotspot:stop": "node src/hotspot.js stop",
     "postinstall": "node scripts/fetch-assets.js",
-    "test": "node --test test/sms.test.js test/greeting.test.js test/flows.test.js test/income.test.js test/notifications.test.js test/sound.test.js test/tv.test.js test/updater.test.js",
+    "test": "node --test test/sms.test.js test/greeting.test.js test/flows.test.js test/income.test.js test/notifications.test.js test/sound.test.js test/tv.test.js test/updater.test.js test/security.test.js",
     "release": "node scripts/release.js",
     "release:notes": "node scripts/release-notes.js",
     "test:site": "node --test --test-concurrency=1 website/test/*.test.js"

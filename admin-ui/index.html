@@ -378,7 +378,7 @@
       <div class="flex items-start justify-between gap-3 flex-wrap">
         <div>
           <h2 class="font-semibold">SMS messaging <span id="smsState" class="ml-1 rounded-full px-2 py-0.5 text-xs font-semibold bg-slate-700 text-slate-300">checking…</span></h2>
-          <p class="mt-1 text-xs text-slate-400">Receipts, expiry reminders, outage notices and offers, sent through Olympus SMS. Messages wait in an outbox and retry automatically if the laptop's internet drops.</p>
+        <p class="mt-1 text-xs text-slate-400">Receipts, expiry reminders, outage notices and offers, sent through SMS.OTS. Create or manage your own account at <a class="text-emerald-300 underline" href="https://sms.ots.co.ke/" target="_blank" rel="noopener noreferrer">sms.ots.co.ke</a>. Messages wait in an outbox and retry automatically if the laptop's internet drops.</p>
         </div>
         <div class="grid grid-cols-3 gap-2 text-center text-xs">
           <div class="rounded-xl bg-slate-950 px-3 py-2"><p id="smsStatQueued" class="text-lg font-extrabold text-amber-300">0</p><p class="text-slate-500">waiting</p></div>
@@ -389,7 +389,7 @@
 
       <details id="smsConn" class="rounded-xl border border-slate-800 p-4 space-y-3">
         <summary class="cursor-pointer text-sm font-semibold text-slate-200">Connection</summary>
-        <p class="text-xs text-slate-400">Token: Olympus dashboard &gt; Developers &gt; Reveal token. Sender ID: your approved alphanumeric ID (max 11 characters) or phone number. Saved to the settings file; no restart needed. The token is never shown again here.</p>
+        <p class="text-xs text-slate-400">Token: SMS.OTS dashboard &gt; Developers &gt; Reveal token. Sender ID: your approved alphanumeric ID (max 11 characters) or phone number. Saved only to this computer's settings file; no restart needed. The token is never displayed, even partially, by this dashboard.</p>
         <div class="grid gap-2 sm:grid-cols-[2fr_1fr_auto]">
           <input id="smsToken" type="password" autocomplete="off" placeholder="API token (leave blank to keep current)" class="min-w-0 rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm font-mono">
           <input id="smsSender" placeholder="Sender ID" maxlength="15" class="min-w-0 rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm">
@@ -557,6 +557,7 @@
 
     <section id="paymentsSection" class="rounded-2xl bg-slate-900 border border-slate-800 p-5 space-y-3">
       <div class="flex items-center justify-between gap-2 flex-wrap"><h2 class="font-semibold">M-Pesa payments <span id="payState" class="text-xs text-slate-500"></span></h2><button id="payTest" class="text-xs underline text-cyan-300">Test Courtney Tech connection</button></div>
+      <p class="text-xs text-slate-400">Use your own Courtney Tech account. Create or manage it at <a class="text-cyan-300 underline" href="https://courtneytech.xyz/" target="_blank" rel="noopener noreferrer">courtneytech.xyz</a>, then enter the credentials in File &gt; Edit settings (.env). SYNTHNET never sends these credentials to its website or stores them in the public repository.</p>
       <p id="payTestOut" class="hidden text-xs text-slate-300 break-words"></p>
       <div class="overflow-x-auto max-h-64 overflow-y-auto">
         <table class="w-full text-sm">

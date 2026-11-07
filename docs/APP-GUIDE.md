@@ -30,7 +30,7 @@ Edit settings: File menu > *Edit settings (.env)* (restart app after) or *Edit p
 5. Dashboard > **Revoke** on that phone: internet stops within a second or two.
 
 ## M-Pesa purchase inside the portal (Courtney Tech)
-Put these in `.env` (File menu > Edit settings), then restart:
+Create and manage your own payment account at https://courtneytech.xyz/, then put its credentials in `.env` (File menu > Edit settings) and restart. Never paste these credentials into the website, GitHub, Vercel, WhatsApp, Telegram, or support email:
 ```
 COURTNEYTECH_API_KEY=...        # from courtneytech.xyz > API Keys
 COURTNEYTECH_API_SECRET=...
@@ -191,7 +191,7 @@ Customers now get SMS for purchases, expiry, outages and offers. All of it runs 
    (Saved to the same `.env` the app uses; no restart. The token is never shown again in the dashboard.)
 3. Press **Test connection**, then send a **test SMS** to your own number.
 Until the token and sender ID are saved, nothing is sent and everything else works exactly as before.
-You can also set `OLYMPUS_SMS_TOKEN` / `OLYMPUS_SMS_SENDER_ID` in `.env` directly.
+Create and manage your own SMS account at https://sms.ots.co.ke/. Enter the token and approved sender ID in Admin > SMS messaging, or set `OLYMPUS_SMS_TOKEN` / `OLYMPUS_SMS_SENDER_ID` in `.env` directly. Never share them publicly.
 
 ## What gets sent
 | Message | When | Default |

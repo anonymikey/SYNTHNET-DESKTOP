@@ -23,6 +23,7 @@ const cfg = () => ({
 const enabled = () => { const c = cfg(); return !!(c.key && c.secret && !/^your_/i.test(c.key) && !/^your_/i.test(c.secret) && Number.isInteger(c.account) && c.account > 0); };
 
 const { normPhone, mask } = require('./phone');
+const safeProviderMessage = (value) => String(value || '').replace(/(api[-_ ]?(?:key|secret)|authorization|bearer|token)\s*[:=]?\s*[^\s,;]+/ig, '$1=[redacted]').slice(0, 200);
 const tierName = (id) => ((portal().tiers || []).find((t) => t.id === id) || {}).name || id;
 const ev = (e) => { try { events.emit({ category: 'payments', ...e }); } catch (err) { console.error('[events]', err.message); } };
 
@@ -64,7 +65,7 @@ async function start({ tier: tierId, phone, ip, mac, deviceType }) {
   rec.checkoutId = d.checkoutRequestId || d.checkout_request_id;
   rec.transactionId = d.transactionId || d.transaction_id;
   if (res.http >= 400 || d.success !== true || !rec.checkoutId) {
-    rec.status = 'failed'; rec.message = `HTTP ${res.http}: ${d.message || 'no checkout id'}`.slice(0, 200);
+    rec.status = 'failed'; rec.message = safeProviderMessage(`HTTP ${res.http}: ${d.message || 'no checkout id'}`);
     load()[rec.id] = rec; save();
     console.error('[pay] STK push rejected:', rec.message);          // 401 = bad key/secret, 402 = wallet needs top-up for the fee
     ev({ level: res.http === 401 || res.http === 402 ? 'critical' : 'warning', title: 'M-Pesa request rejected by the provider', message: rec.message + (res.http === 402 ? ' (top up your Courtney Tech wallet)' : res.http === 401 ? ' (check the API key and secret)' : ''), dedupeKey: 'pay-rejected', dedupeMs: 15 * 60000 });

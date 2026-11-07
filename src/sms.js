@@ -10,6 +10,7 @@ const events = require('./events');
 
 const LOG_FILE = path.join(DATA_DIR, 'sms-log.json');
 const LOG_CAP = 1000;
+const safeProviderMessage = (value) => String(value || '').replace(/(api[-_ ]?(?:key|secret)|authorization|bearer|token)\s*[:=]?\s*[^\s,;]+/ig, '$1=[redacted]').slice(0, 200);
 const BACKOFF_MS = [20e3, 60e3, 3 * 60e3, 10 * 60e3, 30 * 60e3, 60 * 60e3];
 const MAX_ATTEMPTS = 10;
 const CHUNK = 50;                                                  // recipients per API request (broadcasts)
@@ -20,7 +21,6 @@ const cfg = () => ({
   sender: (process.env.OLYMPUS_SMS_SENDER_ID || '').trim()
 });
 const configured = () => { const c = cfg(); return !!(c.token && c.sender); };
-const tokenHint = () => { const t = cfg().token; return t ? t.slice(0, 6) + '\u2026' + t.slice(-3) : ''; };
 
 /* ---------------- message length (GSM-7 vs Unicode) ---------------- */
 const GSM = new Set('@\u00a3$\u00a5\u00e8\u00e9\u00f9\u00ec\u00f2\u00c7\n\u00d8\u00f8\r\u00c5\u00e5\u0394_\u03a6\u0393\u039b\u03a9\u03a0\u03a8\u03a3\u0398\u039e\u00c6\u00e6\u00df\u00c9 !"#\u00a4%&\'()*+,-./0123456789:;<=>?\u00a1ABCDEFGHIJKLMNOPQRSTUVWXYZ\u00c4\u00d6\u00d1\u00dc\u00a7\u00bf abcdefghijklmnopqrstuvwxyz\u00e4\u00f6\u00f1\u00fc\u00e0');
@@ -77,7 +77,7 @@ async function rawSend({ recipients, text, scheduleTime }) {
     const d = Array.isArray(json.data) ? json.data[0] : json.data;
     return { ok: true, providerRef: d && typeof d === 'object' ? String(d.uid || d.id || '') : '' };
   }
-  const message = String(json.message || json.error || `HTTP ${http}`).slice(0, 200);
+  const message = safeProviderMessage(json.message || json.error || `HTTP ${http}`);
   return { ok: false, retryable: http === 408 || http === 429 || http >= 500, error: message };
 }
 
@@ -185,4 +185,4 @@ function stats() {
   };
 }
 
-module.exports = { sentUnits, sendNow, configured, tokenHint, cfg, measure, rawSend, sendHashed, testConnection, enqueue, startWorker, retry, cancel, cancelPending, list, stats, CHUNK, _tick: tick, _expedite: () => { for (const e of load()) if (e.status === 'queued') e.nextAttemptAt = 0; }, _reset: () => { log = null; } };
+module.exports = { sentUnits, sendNow, configured, cfg, measure, rawSend, sendHashed, testConnection, enqueue, startWorker, retry, cancel, cancelPending, list, stats, CHUNK, _tick: tick, _expedite: () => { for (const e of load()) if (e.status === 'queued') e.nextAttemptAt = 0; }, _reset: () => { log = null; } };
