@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Tray, Menu, Notification, dialog, nativeImage, shell } = require('electron');
+const { app, BrowserWindow, Tray, Menu, dialog, nativeImage, shell } = require('electron');
 const path = require('path'), fs = require('fs'), crypto = require('crypto');
 const { execFile } = require('child_process');
 const updater = require('./updater');
@@ -60,22 +60,17 @@ async function checkForUpdates({ force = false } = {}) {
     if (!updater.shouldNotify(release, app.getVersion(), lastNotified)) return false;
     rememberNotifiedVersion(release.version);
     const title = `SYNTHNET v${release.version} is ready`;
-    const body = 'New features and improvements are available. Click to view the release and update your app.';
-    if (Notification && Notification.isSupported()) {
-      const notice = new Notification({ title, body, icon: ICON, silent: false });
-      notice.on('click', () => openReleasePage(release.version));
-      notice.show();
-    } else {
-      const choice = await dialog.showMessageBox({ type: 'info', title: 'SYNTHNET update available', message: title, detail: body, buttons: ['View update', 'Later'], defaultId: 0, cancelId: 1, noLink: true });
-      if (choice.response === 0) openReleasePage(release.version);
-    }
+    const body = 'New features, performance improvements, and fixes are available. Open the private SYNTHNET release page to download the latest installer.';
+    const choice = await dialog.showMessageBox(win || undefined, { type: 'info', title: 'SYNTHNET update available', message: title, detail: body, buttons: ['View update', 'Later'], defaultId: 0, cancelId: 1, noLink: true });
+    if (choice.response === 0) openReleasePage(release.version);
     return true;
   } catch { return false; }
 }
 
 function startUpdateChecker() {
   clearInterval(updateTimer);
-  setTimeout(() => checkForUpdates(), 3500);
+  // Check shortly after the dashboard opens so an administrator is told about a new release immediately.
+  setTimeout(() => checkForUpdates(), 1500);
   updateTimer = setInterval(() => checkForUpdates(), updater.DEFAULT_INTERVAL_MS);
   updateTimer.unref();
 }

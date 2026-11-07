@@ -146,6 +146,38 @@
   };
   function say2(id, text, ok) { const m = $(id); m.textContent = text; m.className = 'text-sm min-h-[1.25rem] ' + (ok ? 'text-emerald-400' : 'text-rose-400'); }
 
+  /* ---------- First-run operator tour ---------- */
+  const tourSteps = [
+    { target: '#statHot', title: 'Start with the gate', text: 'Confirm Hotspot and Internet gate are ON before customers connect. If the gate is unavailable, SYNTHNET keeps the hotspot stopped to prevent free internet leaks.' },
+    { target: '#clientsSection', title: 'Watch connected devices', text: 'This is where you see phones, TVs and laptops, their package state, time remaining, and the controls to revoke or award access.' },
+    { target: '#paymentsSection', title: 'Connect your own payments', text: 'Configure your own Courtney Tech credentials in File > Edit settings (.env), restart, then test the connection here. Never share the API key or secret.' },
+    { target: '#smsSection', title: 'Add optional SMS', text: 'Use your own SMS.OTS token and approved sender ID in the SMS Connection panel. Save and test with your own number; the token is never displayed.' },
+    { target: '#bellBtn', title: 'Stay informed', text: 'The notification bell records important payment, device, outage, gate and update events. The Help menu also includes the website, status page, and update check.' }
+  ];
+  let tourIndex = 0;
+  function finishTour() {
+    $('tourOverlay').classList.add('hidden');
+    document.querySelectorAll('.tour-target').forEach((node) => node.classList.remove('tour-target'));
+    try { localStorage.setItem('synthnetAdminTour.v1', 'done'); } catch {}
+  }
+  function showTourStep(index) {
+    tourIndex = Math.max(0, Math.min(index, tourSteps.length - 1));
+    const step = tourSteps[tourIndex];
+    document.querySelectorAll('.tour-target').forEach((node) => node.classList.remove('tour-target'));
+    const target = document.querySelector(step.target);
+    if (target) { target.classList.add('tour-target'); target.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    $('tourStep').textContent = `SYNTHNET TOUR · ${tourIndex + 1} OF ${tourSteps.length}`;
+    $('tourTitle').textContent = step.title; $('tourText').textContent = step.text;
+    $('tourBack').disabled = tourIndex === 0; $('tourBack').classList.toggle('opacity-40', tourIndex === 0);
+    $('tourNext').textContent = tourIndex === tourSteps.length - 1 ? 'Finish tour' : 'Next';
+  }
+  function startTour() { $('tourOverlay').classList.remove('hidden'); showTourStep(0); }
+  $('tourBtn').onclick = startTour;
+  $('tourSkip').onclick = finishTour;
+  $('tourBack').onclick = () => showTourStep(tourIndex - 1);
+  $('tourNext').onclick = () => tourIndex === tourSteps.length - 1 ? finishTour() : showTourStep(tourIndex + 1);
+  document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !$('tourOverlay').classList.contains('hidden')) finishTour(); });
+
   /* ---------- Hotspot ---------- */
   function showHotspot(d, fill) {
     $('hState').textContent = d.state || 'unknown'; $('hSsid').textContent = d.ssid || '–';
@@ -417,6 +449,7 @@
     await loadTiers(); loadClients(); loadVouchers(); loadHotspot(true); loadPayments().catch(() => {});
     loadPortalContent().catch((e) => toast(e.message)); loadTheme().catch((e) => toast(e.message));
     SynthAdmin.onStart.forEach((fn) => { try { fn(); } catch (e) { console.error(e); } });
+    try { if (localStorage.getItem('synthnetAdminTour.v1') !== 'done') setTimeout(startTour, 700); } catch { setTimeout(startTour, 700); }
     timers.push(setInterval(() => { if (!document.hidden) loadClients().catch(() => {}); }, 5000));
     timers.push(setInterval(() => { if (!document.hidden) loadHotspot(false); }, 30000));
     timers.push(setInterval(() => { if (!document.hidden) loadPayments().catch(() => {}); }, 15000));

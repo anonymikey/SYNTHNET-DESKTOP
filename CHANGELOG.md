@@ -10,6 +10,10 @@ All notable changes to SYNTHNET Desktop are documented here.
 
 **Credential setup guidance.** The Admin dashboard and application guide now explain the Courtney Tech API key, API secret, numeric account ID, SMS.OTS token, and approved sender ID setup in a clear sequence. Provider credentials remain local to the operator's computer and are never displayed or sent to the public website.
 
+**Cleaner update flow.** Existing installations check for a newer release shortly after the Admin dashboard opens. Administrators receive a clear update dialog with a private SYNTHNET release page, download instructions, and a Later option; the background check remains available every six hours and from Help > Check for updates.
+
+**Guided onboarding.** The desktop Admin dashboard now opens a first-run operator tour covering the gate, connected devices, payments, SMS, notifications, and support tools. The public website adds a responsive first-visit tour explaining the product flow, download page, and private release history. Both tours can be opened again at any time.
+
 ## [0.0.2] - 2026-11-07
 
 
