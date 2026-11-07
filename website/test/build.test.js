@@ -10,5 +10,6 @@ test('build creates the deployable static site', () => {
   execFileSync(process.execPath, ['build.js'], { cwd: root, stdio: 'pipe' });
   const html = fs.readFileSync(path.join(root, 'public/index.html'), 'utf8');
   assert.match(html, /id="features"/); assert.match(html, /id="download"/); assert.match(html, /src="\/app\.js"/); assert.doesNotMatch(html, /<script(?![^>]+src)/i); assert.doesNotMatch(html, / on[a-z]+=/i);
-  assert.ok(fs.existsSync(path.join(root, 'public/manus-routes.json'))); assert.ok(fs.existsSync(path.join(root, 'public/favicon.svg')));
+  assert.ok(fs.existsSync(path.join(root, 'public/manus-routes.json'))); assert.ok(fs.existsSync(path.join(root, 'public/favicon.svg'))); assert.ok(fs.existsSync(path.join(root, 'public/status.html'))); assert.ok(fs.existsSync(path.join(root, 'public/status.js')));
+  assert.match(fs.readFileSync(path.join(root, 'public/manus-routes.json'), 'utf8'), /"\/status"/);
 });

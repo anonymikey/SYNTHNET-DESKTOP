@@ -51,6 +51,7 @@ function openProductWebsite() {
 function readLastNotifiedVersion() { try { return fs.readFileSync(UPDATE_MARKER(), 'utf8').trim(); } catch { return ''; } }
 function rememberNotifiedVersion(version) { try { fs.writeFileSync(UPDATE_MARKER(), String(version)); } catch {} }
 function openReleasePage(version) { shell.openExternal(`${WEBSITE_URL}/release?version=${encodeURIComponent(version)}&from=update`).catch(() => {}); }
+function openStatusPage() { shell.openExternal(`${WEBSITE_URL}/status?from=app&appVersion=${encodeURIComponent(app.getVersion())}&platform=${encodeURIComponent(process.platform)}&arch=${encodeURIComponent(process.arch)}`).catch(() => {}); }
 
 async function checkForUpdates({ force = false } = {}) {
   try {
@@ -106,6 +107,7 @@ function buildMenus() {
     { label: 'View', submenu: [{ role: 'reload' }, { role: 'toggleDevTools' }] },
     { label: 'Help', submenu: [
       { label: 'Open SYNTHNET website', click: () => shell.openExternal(`${WEBSITE_URL}/?from=app#download`) },
+      { label: 'Open system performance and status', click: openStatusPage },
       { label: 'Check for updates', click: () => checkForUpdates({ force: true }) },
       { label: 'Contact developer / request a feature', click: () => shell.openExternal(`mailto:${DEVELOPER_EMAIL}?subject=SYNTHNET%20feature%20request%20or%20support`) },
       { label: 'Preview guest portal in browser', click: () => shell.openExternal(`http://localhost:${port}/login`) }

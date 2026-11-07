@@ -15,7 +15,7 @@ test('API normalizes releases from a fake GitHub server', { concurrency: false }
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
   t.after(() => server.close());
   process.env.GITHUB_OWNER = 'example'; process.env.GITHUB_REPO = 'synthnet'; process.env.GITHUB_API_BASE = `http://127.0.0.1:${server.address().port}`; github.clearCache();
-  const latestRes = responseRecorder(); await latest({}, latestRes); assert.equal(latestRes.statusCode, 200); assert.equal(latestRes.body.release.version, '0.10.0'); assert.equal(latestRes.body.release.assets[0].downloadUrl, 'https://downloads.example/setup.exe');
+  const latestRes = responseRecorder(); await latest({}, latestRes); assert.equal(latestRes.statusCode, 200); assert.equal(latestRes.body.release.version, '0.10.0'); assert.equal(latestRes.body.release.installer.name, 'SYNTHNET Setup 0.10.0.exe'); assert.equal(JSON.stringify(latestRes.body).includes('github.com'), false); assert.equal(JSON.stringify(latestRes.body).includes('downloads.example'), false);
   const historyRes = responseRecorder(); await releases({}, historyRes); assert.equal(historyRes.body.releases.length, 2);
   const downloadRes = responseRecorder(); await download({ query: { version: '0.10.0' } }, downloadRes); assert.equal(downloadRes.location, 'https://downloads.example/setup.exe');
   fail = true; process.env.GITHUB_OWNER = 'example'; process.env.GITHUB_REPO = 'synthnet'; process.env.GITHUB_API_BASE = `http://127.0.0.1:${server.address().port}`; for (const entry of github._cache.values()) entry.updatedAt = Date.now() - 121000; const staleRes = responseRecorder(); await releases({}, staleRes); assert.equal(staleRes.statusCode, 200); assert.equal(staleRes.body.stale, true);
