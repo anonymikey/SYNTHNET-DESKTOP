@@ -174,12 +174,17 @@
     const step = tourSteps[tourIndex];
     document.querySelectorAll('.tour-target').forEach((node) => node.classList.remove('tour-target'));
     const target = document.querySelector(step.target);
-    if (target) { target.classList.add('tour-target'); target.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    if (target) { target.classList.add('tour-target'); alignTourTarget(target); }
     $('tourStep').textContent = `SYNTHNET TOUR · ${tourIndex + 1} OF ${tourSteps.length}`;
     $('tourTitle').textContent = step.title; $('tourText').textContent = step.text;
     $('tourBack').disabled = tourIndex === 0; $('tourBack').classList.toggle('opacity-40', tourIndex === 0);
     $('tourNext').textContent = tourIndex === tourSteps.length - 1 ? 'Finish tour' : 'Next';
-    requestAnimationFrame(positionTourCard);
+    requestAnimationFrame(() => requestAnimationFrame(positionTourCard));
+  }
+  function alignTourTarget(target) {
+    const rect = target.getBoundingClientRect();
+    const desiredTop = Math.max(0, window.scrollY + rect.top - Math.max(24, (window.innerHeight - Math.min(rect.height, window.innerHeight)) / 2));
+    window.scrollTo({ top: desiredTop, behavior: 'auto' });
   }
   function positionTourCard() {
     const card = $('tourCard'), target = document.querySelector(tourSteps[tourIndex].target);
@@ -187,8 +192,10 @@
     const rect = target.getBoundingClientRect(), gap = 18, margin = 16, cardRect = card.getBoundingClientRect();
     const below = rect.bottom + gap + cardRect.height <= window.innerHeight - margin;
     const top = below ? rect.bottom + gap : Math.max(margin, rect.top - cardRect.height - gap);
-    const left = Math.min(Math.max(margin, rect.left + Math.min(42, Math.max(12, rect.width / 2)) - 42), window.innerWidth - cardRect.width - margin);
+    const left = Math.min(Math.max(margin, rect.left + rect.width / 2 - cardRect.width / 2), window.innerWidth - cardRect.width - margin);
+    const arrowLeft = Math.min(Math.max(22, rect.left + rect.width / 2 - left - 8), cardRect.width - 38);
     card.dataset.placement = below ? 'bottom' : 'top';
+    card.style.setProperty('--arrow-left', `${arrowLeft}px`);
     card.style.top = `${top}px`; card.style.left = `${left}px`;
   }
   function startTour() { tourActive = true; document.documentElement.classList.add('tour-scroll-locked'); document.body.classList.add('tour-scroll-locked'); $('tourOverlay').classList.remove('hidden'); showTourStep(0); }

@@ -78,12 +78,17 @@
     tourIndex = Math.max(0, Math.min(index, tourSteps.length - 1));
     const step = tourSteps[tourIndex], target = document.querySelector(step.target);
     document.querySelectorAll('.site-tour-target').forEach((node) => node.classList.remove('site-tour-target'));
-    if (target) { target.classList.add('site-tour-target'); target.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    if (target) { target.classList.add('site-tour-target'); alignSiteTourTarget(target); }
     $('#site-tour-step').textContent = `SYNTHNET TOUR · ${tourIndex + 1} OF ${tourSteps.length}`;
     $('#site-tour-title').textContent = step.title; $('#site-tour-text').textContent = step.text;
     $('#site-tour-back').disabled = tourIndex === 0; $('#site-tour-back').classList.toggle('is-disabled', tourIndex === 0);
     $('#site-tour-next').textContent = tourIndex === tourSteps.length - 1 ? 'Finish tour' : 'Next';
-    requestAnimationFrame(positionSiteTourCard);
+    requestAnimationFrame(() => requestAnimationFrame(positionSiteTourCard));
+  }
+  function alignSiteTourTarget(target) {
+    const rect = target.getBoundingClientRect();
+    const desiredTop = Math.max(0, window.scrollY + rect.top - Math.max(24, (window.innerHeight - Math.min(rect.height, window.innerHeight)) / 2));
+    window.scrollTo({ top: desiredTop, behavior: 'auto' });
   }
   function positionSiteTourCard() {
     const card = $('#site-tour-card'), target = document.querySelector(tourSteps[tourIndex].target);
@@ -92,8 +97,10 @@
     const cardRect = card.getBoundingClientRect();
     const below = rect.bottom + gap + cardRect.height <= window.innerHeight - margin;
     const top = below ? rect.bottom + gap : Math.max(margin, rect.top - cardRect.height - gap);
-    const left = Math.min(Math.max(margin, rect.left + Math.min(42, Math.max(12, rect.width / 2)) - 42), window.innerWidth - cardRect.width - margin);
+    const left = Math.min(Math.max(margin, rect.left + rect.width / 2 - cardRect.width / 2), window.innerWidth - cardRect.width - margin);
+    const arrowLeft = Math.min(Math.max(22, rect.left + rect.width / 2 - left - 8), cardRect.width - 38);
     card.dataset.placement = below ? 'bottom' : 'top';
+    card.style.setProperty('--arrow-left', `${arrowLeft}px`);
     card.style.top = `${top}px`; card.style.left = `${left}px`;
   }
   function startSiteTour() { if (!tour) return; tourActive = true; document.documentElement.classList.add('tour-scroll-locked'); document.body.classList.add('tour-scroll-locked'); tour.hidden = false; showSiteTourStep(0); }
