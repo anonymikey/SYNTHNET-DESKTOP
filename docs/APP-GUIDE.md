@@ -46,7 +46,7 @@ Courtney Tech takes a wallet-funded fee per payment (KES 1 per KES 50 bracket): 
 ## Limits you should know
 - Windows Mobile Hotspot allows **8 devices max**.
 - Unpaid phones: https:// sites simply fail (normal for captive portals); the popup comes from http probes.
-- Antivirus sometimes flags the WinDivert driver; allow `%APPDATA%\SYNTHNET\data\windivert`.
+- On first run, SYNTHNET downloads WinDivert into a temporary staging folder, validates both x64 files, and then installs them under `%APPDATA%\SYNTHNET\data\windivert`. If Windows Security or antivirus quarantines or locks the files, close other SYNTHNET instances, allow the application and that folder in the security product, and restart SYNTHNET as Administrator. Do not disable antivirus globally. A failed gate keeps the hotspot stopped so unpaid devices cannot receive free internet.
 - The laptop must stay on, plugged in, with sleep disabled.
 
 - `100 GB Data Plan` is sold as 30 days, but the 100 GB cap is **not enforced** (paid traffic bypasses Node for speed, so bytes aren't counted).

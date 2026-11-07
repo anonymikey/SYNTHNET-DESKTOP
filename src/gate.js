@@ -28,20 +28,42 @@ const ipAt = (b, o) => `${b[o]}.${b[o + 1]}.${b[o + 2]}.${b[o + 3]}`;
 const setIp = (b, o, ip) => ip.split('.').forEach((x, i) => { b[o + i] = +x; });
 const q = (s) => s.replace(/'/g, "''");
 
+function validDriverFile(file) {
+  try { return fs.statSync(file).isFile() && fs.statSync(file).size > 4096; } catch { return false; }
+}
+
 function ensureDll() {
   return new Promise((resolve, reject) => {
-    if (fs.existsSync(DLL) && fs.existsSync(SYS)) return resolve(DLL);
+    if (validDriverFile(DLL) && validDriverFile(SYS)) return resolve(DLL);
     fs.mkdirSync(DIR, { recursive: true });
-    const zip = path.join(DIR, 'wd.zip'), tmp = path.join(DIR, 'tmp');
+    const stamp = `${process.pid}-${Date.now()}`;
+    const stage = path.join(DATA_DIR, `.windivert-stage-${stamp}`);
+    const zip = path.join(stage, 'windivert.zip');
+    const tmp = path.join(stage, 'expanded');
+    const cleanup = `if (Test-Path -LiteralPath '${q(stage)}') { Remove-Item -LiteralPath '${q(stage)}' -Recurse -Force -ErrorAction SilentlyContinue }`;
     const ps = `$ErrorActionPreference='Stop'; [Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12; ` +
+      `New-Item -ItemType Directory -Force -Path '${q(stage)}' | Out-Null; ` +
+      `$downloaded=$false; for ($i=1; $i -le 3 -and -not $downloaded; $i++) { ` +
+      `try { if (Test-Path -LiteralPath '${q(zip)}') { Remove-Item -LiteralPath '${q(zip)}' -Force }; ` +
       `Invoke-WebRequest -UseBasicParsing -Uri '${ZIP_URL}' -OutFile '${q(zip)}'; ` +
-      `Expand-Archive -Force -Path '${q(zip)}' -DestinationPath '${q(tmp)}'; ` +
-      `$d=(Get-ChildItem -Recurse '${q(tmp)}' -Filter WinDivert64.sys | Select-Object -First 1).DirectoryName; ` +
-      `Copy-Item "$d\\WinDivert.dll","$d\\WinDivert64.sys" '${q(DIR)}' -Force; Remove-Item '${q(zip)}','${q(tmp)}' -Recurse -Force`;
-    execFile('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', ps], { timeout: 180000, windowsHide: true }, (err, _o, stderr) => {
-      if (err || !fs.existsSync(DLL)) return reject(new Error(
-        'Could not download WinDivert (' + String(stderr || err.message).trim().slice(0, 120) + '). Download WinDivert-2.2.2-A.zip from reqrypt.org/windivert.html ' +
-        'and copy x64\\WinDivert.dll + x64\\WinDivert64.sys into ' + DIR));
+      `if ((Get-Item -LiteralPath '${q(zip)}').Length -lt 100000) { throw 'Downloaded archive is incomplete.' }; $downloaded=$true } ` +
+      `catch { if ($i -eq 3) { throw }; Start-Sleep -Seconds 2 } }; ` +
+      `Expand-Archive -Force -LiteralPath '${q(zip)}' -DestinationPath '${q(tmp)}'; ` +
+      `$d=(Get-ChildItem -LiteralPath '${q(tmp)}' -Recurse -File -Filter 'WinDivert64.sys' | Select-Object -First 1).DirectoryName; ` +
+      `if (-not $d -or -not (Test-Path -LiteralPath (Join-Path $d 'WinDivert.dll'))) { throw 'The archive does not contain the x64 WinDivert files.' }; ` +
+      `New-Item -ItemType Directory -Force -Path '${q(DIR)}' | Out-Null; ` +
+      `Copy-Item -LiteralPath (Join-Path $d 'WinDivert.dll') -Destination '${q(DLL)}.new' -Force; ` +
+      `Copy-Item -LiteralPath (Join-Path $d 'WinDivert64.sys') -Destination '${q(SYS)}.new' -Force; ` +
+      `if ((Get-Item -LiteralPath '${q(DLL)}.new').Length -le 4096 -or (Get-Item -LiteralPath '${q(SYS)}.new').Length -le 4096) { throw 'The extracted x64 driver files are incomplete.' }; ` +
+      `Move-Item -LiteralPath '${q(DLL)}.new' -Destination '${q(DLL)}' -Force; Move-Item -LiteralPath '${q(SYS)}.new' -Destination '${q(SYS)}' -Force; ${cleanup}`;
+    execFile('powershell.exe', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-Command', ps], { timeout: 180000, windowsHide: true }, (err, _o, stderr) => {
+      if (err || !validDriverFile(DLL) || !validDriverFile(SYS)) {
+        const detail = String(stderr || (err && err.message) || 'unknown Windows file-operation error').replace(/\s+/g, ' ').trim().slice(0, 220);
+        return reject(new Error(
+          `Could not install the WinDivert driver (${detail}). Windows Security or antivirus may have quarantined or locked the files. ` +
+          `Close other SYNTHNET instances, allow the app through security software, then restart as Administrator. ` +
+          `If it still fails, manually place the x64 WinDivert.dll and WinDivert64.sys files in ${DIR}.`));
+      }
       resolve(DLL);
     });
   });
