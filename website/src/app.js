@@ -7,10 +7,12 @@
     menu.addEventListener('click', function () {
       const expanded = menu.getAttribute('aria-expanded') === 'true';
       menu.setAttribute('aria-expanded', String(!expanded));
+      menu.setAttribute('aria-label', expanded ? 'Open navigation menu' : 'Close navigation menu');
       mobileNav.hidden = expanded;
     });
     mobileNav.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => {
       menu.setAttribute('aria-expanded', 'false');
+      menu.setAttribute('aria-label', 'Open navigation menu');
       mobileNav.hidden = true;
     }));
   }
@@ -56,11 +58,21 @@
     { target: '#history', title: 'Read every release', text: 'Release history explains new features, fixes and performance improvements without sending visitors to the source repository.' }
   ];
   let tourIndex = 0;
+  let tourActive = false;
+  let welcomeTimer = null;
+  function showSiteWelcome() {
+    const welcome = $('#site-welcome');
+    if (!welcome) return;
+    clearTimeout(welcomeTimer); welcome.hidden = false; welcome.classList.remove('is-leaving');
+    welcomeTimer = setTimeout(() => { welcome.classList.add('is-leaving'); setTimeout(() => { welcome.hidden = true; welcome.classList.remove('is-leaving'); }, 260); }, 5200);
+  }
   function finishSiteTour() {
     if (!tour) return;
     tour.hidden = true;
+    tourActive = false; document.documentElement.classList.remove('tour-scroll-locked'); document.body.classList.remove('tour-scroll-locked');
     document.querySelectorAll('.site-tour-target').forEach((node) => node.classList.remove('site-tour-target'));
     try { localStorage.setItem('synthnetWebsiteTour.v1', 'done'); } catch {}
+    showSiteWelcome();
   }
   function showSiteTourStep(index) {
     tourIndex = Math.max(0, Math.min(index, tourSteps.length - 1));
@@ -84,12 +96,13 @@
     card.dataset.placement = below ? 'bottom' : 'top';
     card.style.top = `${top}px`; card.style.left = `${left}px`;
   }
-  function startSiteTour() { if (!tour) return; tour.hidden = false; showSiteTourStep(0); }
+  function startSiteTour() { if (!tour) return; tourActive = true; document.documentElement.classList.add('tour-scroll-locked'); document.body.classList.add('tour-scroll-locked'); tour.hidden = false; showSiteTourStep(0); }
   document.querySelectorAll('.tour-launch').forEach((button) => button.addEventListener('click', startSiteTour));
   if ($('#site-tour-skip')) $('#site-tour-skip').addEventListener('click', finishSiteTour);
   if ($('#site-tour-back')) $('#site-tour-back').addEventListener('click', () => showSiteTourStep(tourIndex - 1));
   if ($('#site-tour-next')) $('#site-tour-next').addEventListener('click', () => tourIndex === tourSteps.length - 1 ? finishSiteTour() : showSiteTourStep(tourIndex + 1));
-  document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && tour && !tour.hidden) finishSiteTour(); });
+  document.addEventListener('keydown', (event) => { if (tourActive && ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(event.key)) event.preventDefault(); if (event.key === 'Escape' && tour && !tour.hidden) finishSiteTour(); });
+  ['wheel', 'touchmove'].forEach((type) => document.addEventListener(type, (event) => { if (tourActive && !event.target.closest('.site-tour-card')) event.preventDefault(); }, { passive: false }));
   window.addEventListener('resize', () => { if (tour && !tour.hidden) positionSiteTourCard(); });
   try { if (localStorage.getItem('synthnetWebsiteTour.v1') !== 'done') setTimeout(startSiteTour, 900); } catch { setTimeout(startSiteTour, 900); }
 }());

@@ -155,10 +155,19 @@
     { target: '#bellBtn', title: 'Stay informed', text: 'The notification bell records important payment, device, outage, gate and update events. The Help menu also includes the website, status page, and update check.' }
   ];
   let tourIndex = 0;
+  let tourActive = false;
+  let welcomeTimer = null;
+  function showAdminWelcome() {
+    const welcome = $('adminWelcome'); if (!welcome) return;
+    clearTimeout(welcomeTimer); welcome.classList.remove('hidden', 'welcome-leaving');
+    welcomeTimer = setTimeout(() => { welcome.classList.add('welcome-leaving'); setTimeout(() => { welcome.classList.add('hidden'); welcome.classList.remove('welcome-leaving'); }, 260); }, 5200);
+  }
   function finishTour() {
     $('tourOverlay').classList.add('hidden');
+    tourActive = false; document.documentElement.classList.remove('tour-scroll-locked'); document.body.classList.remove('tour-scroll-locked');
     document.querySelectorAll('.tour-target').forEach((node) => node.classList.remove('tour-target'));
     try { localStorage.setItem('synthnetAdminTour.v1', 'done'); } catch {}
+    showAdminWelcome();
   }
   function showTourStep(index) {
     tourIndex = Math.max(0, Math.min(index, tourSteps.length - 1));
@@ -182,12 +191,13 @@
     card.dataset.placement = below ? 'bottom' : 'top';
     card.style.top = `${top}px`; card.style.left = `${left}px`;
   }
-  function startTour() { $('tourOverlay').classList.remove('hidden'); showTourStep(0); }
+  function startTour() { tourActive = true; document.documentElement.classList.add('tour-scroll-locked'); document.body.classList.add('tour-scroll-locked'); $('tourOverlay').classList.remove('hidden'); showTourStep(0); }
   $('tourBtn').onclick = startTour;
   $('tourSkip').onclick = finishTour;
   $('tourBack').onclick = () => showTourStep(tourIndex - 1);
   $('tourNext').onclick = () => tourIndex === tourSteps.length - 1 ? finishTour() : showTourStep(tourIndex + 1);
-  document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !$('tourOverlay').classList.contains('hidden')) finishTour(); });
+  document.addEventListener('keydown', (event) => { if (tourActive && ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(event.key)) event.preventDefault(); if (event.key === 'Escape' && !$('tourOverlay').classList.contains('hidden')) finishTour(); });
+  ['wheel', 'touchmove'].forEach((type) => document.addEventListener(type, (event) => { if (tourActive && !event.target.closest('.tour-card')) event.preventDefault(); }, { passive: false }));
   window.addEventListener('resize', () => { if (!$('tourOverlay').classList.contains('hidden')) positionTourCard(); });
 
   /* ---------- Hotspot ---------- */

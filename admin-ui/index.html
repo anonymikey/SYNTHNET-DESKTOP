@@ -32,6 +32,7 @@
     .n-toast{animation:nToastIn .3s ease-out both}
     .tour-target{position:relative;z-index:100!important;box-shadow:0 0 0 3px rgba(34,211,238,.9),0 0 30px rgba(34,211,238,.35)!important;border-radius:1rem;background-color:rgba(15,23,42,.96)}
     .tour-card{position:fixed!important;z-index:120!important;pointer-events:auto}.tour-card:after{content:"";position:absolute;width:16px;height:16px;background:#0f172a;border-left:1px solid rgba(34,211,238,.4);border-top:1px solid rgba(34,211,238,.4);transform:rotate(45deg);left:42px}.tour-card[data-placement="bottom"]:after{top:-9px}.tour-card[data-placement="top"]:after{bottom:-9px;transform:rotate(225deg)}
+    .tour-scroll-locked{overscroll-behavior:none}.welcome-popup{animation:welcomeIn .3s ease-out}.welcome-popup.welcome-leaving{animation:welcomeOut .25s ease-in forwards}@keyframes welcomeIn{from{opacity:0;transform:translate(-50%,18px)}to{opacity:1;transform:translate(-50%,0)}}@keyframes welcomeOut{to{opacity:0;transform:translate(-50%,18px)}}
     .n-scroll::-webkit-scrollbar{width:8px}.n-scroll::-webkit-scrollbar-thumb{background:#334155;border-radius:8px}
   </style>
 </head>
@@ -72,6 +73,7 @@
         </section>
       </div>
     </div>
+    <div id="adminWelcome" class="welcome-popup hidden fixed bottom-5 left-1/2 z-[130] -translate-x-1/2 rounded-2xl border border-cyan-400/40 bg-slate-900/95 px-5 py-3 text-center shadow-2xl shadow-cyan-950/40" role="status" aria-live="polite"><strong class="block text-sm text-cyan-200">Welcome home, operator</strong><span class="mt-1 block text-xs text-slate-300">Your SYNTHNET control room is ready. Let’s make the signal work for you.</span></div>
     <section class="support-card rounded-2xl border border-cyan-400/25 bg-gradient-to-br from-cyan-400/10 via-slate-900 to-fuchsia-500/10 p-4 shadow-lg shadow-cyan-950/20" aria-label="Developer support"><div class="flex flex-wrap items-start justify-between gap-3"><div><p class="text-[10px] font-bold uppercase tracking-[0.22em] text-cyan-300">BUILD WITH ME</p><h2 class="mt-1 text-base font-extrabold text-white">Have an idea or found a rough edge?</h2><p class="mt-1 max-w-2xl text-sm leading-6 text-slate-300">Tell me what would make SYNTHNET more useful for your operation. Feature requests, bugs and “this would be amazing if…” thoughts are welcome.</p></div><a class="shrink-0 rounded-xl bg-cyan-300 px-3 py-2 text-xs font-extrabold text-slate-950 transition hover:bg-cyan-200" href="mailto:anonymiketech@gmail.com?subject=SYNTHNET%20feature%20request">Email the developer</a></div><p class="mt-3 text-xs text-slate-400">anonymiketech@gmail.com · Include your SYNTHNET version and what happened.</p></section>
     <section id="bellPanel" class="n-panel hidden fixed right-2 top-[3.7rem] z-50 flex max-h-[78vh] w-[26rem] max-w-[calc(100vw-1rem)] flex-col overflow-hidden rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl shadow-black/60" role="dialog" aria-label="Notifications" tabindex="-1">
       <div class="flex items-center justify-between gap-2 border-b border-slate-800 px-4 py-3">
