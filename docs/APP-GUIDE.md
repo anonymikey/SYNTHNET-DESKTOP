@@ -29,12 +29,21 @@ Edit settings: File menu > *Edit settings (.env)* (restart app after) or *Edit p
 4. Buy the KSh 5 package (Courtney Tech's docs list 254708374149 as a test number that simulates success): internet unlocks at full speed.
 5. Dashboard > **Revoke** on that phone: internet stops within a second or two.
 
-## M-Pesa purchase inside the portal (Courtney Tech)
-Create and manage your own payment account at https://courtneytech.xyz/, then put its credentials in `.env` (File menu > Edit settings) and restart. Never paste these credentials into the website, GitHub, Vercel, WhatsApp, Telegram, or support email:
+## Provider credential setup
+
+SYNTHNET is integrated with the providers, but every operator must use their own provider accounts and credentials. The public website does not collect or store these values.
+
+### M-Pesa purchase inside the portal (Courtney Tech)
+1. Create or manage your own payment account at https://courtneytech.xyz/.
+2. Open **File > Edit settings (.env)** in SYNTHNET.
+3. Enter the API key, API secret, and numeric payment account ID below, save the file, and restart SYNTHNET.
+4. In Admin, press **Test Courtney Tech connection**. Copy one of the returned account IDs into `COURTNEYTECH_ACCOUNT_ID`, save, restart, and test again.
+
+Never paste these credentials into the website, GitHub, Vercel, WhatsApp, Telegram, screenshots, or support email:
 ```
 COURTNEYTECH_API_KEY=...        # from courtneytech.xyz > API Keys
 COURTNEYTECH_API_SECRET=...
-COURTNEYTECH_ACCOUNT_ID=...     # number: dashboard > "Test Courtney Tech connection" shows it
+COURTNEYTECH_ACCOUNT_ID=...     # numeric ID shown by the Admin connection test
 ```
 Flow: tenant taps **Get this package**, enters their M-Pesa number, gets the STK prompt, and the portal polls `POST /v2/status` every ~5 s.
 On `completed` the buyer's IP is whitelisted in the gate instantly. No voucher code is needed.
@@ -186,12 +195,13 @@ Customers now get SMS for purchases, expiry, outages and offers. All of it runs 
 (`https://sms.ots.co.ke/api/v3`) and is controlled from **Admin dashboard > SMS messaging**.
 
 ## Set up (2 minutes)
-1. Olympus dashboard > **Developers** > *Reveal token*. Copy it.
-2. SYNTHNET Admin > **SMS messaging > Connection**: paste the token and your **approved sender ID**, press **Save**.
-   (Saved to the same `.env` the app uses; no restart. The token is never shown again in the dashboard.)
-3. Press **Test connection**, then send a **test SMS** to your own number.
+1. Create or manage your own account at https://sms.ots.co.ke/.
+2. In the provider dashboard open **Developers > Reveal token** and copy the token.
+3. In SYNTHNET Admin open **SMS messaging > Connection**, paste the token and your **approved sender ID**, then press **Save**.
+   The token is saved to the same local `.env` used by the app; no restart is needed, and the token is never shown again, even partially, in the dashboard.
+4. Press **Test connection**, then send a **test SMS** to your own number.
 Until the token and sender ID are saved, nothing is sent and everything else works exactly as before.
-Create and manage your own SMS account at https://sms.ots.co.ke/. Enter the token and approved sender ID in Admin > SMS messaging, or set `OLYMPUS_SMS_TOKEN` / `OLYMPUS_SMS_SENDER_ID` in `.env` directly. Never share them publicly.
+The sender ID must be approved by the provider and may be an alphanumeric ID up to 11 characters or a phone number with country code. Never share the token or sender ID publicly.
 
 ## What gets sent
 | Message | When | Default |

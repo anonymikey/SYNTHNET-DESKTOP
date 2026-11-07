@@ -389,7 +389,7 @@
 
       <details id="smsConn" class="rounded-xl border border-slate-800 p-4 space-y-3">
         <summary class="cursor-pointer text-sm font-semibold text-slate-200">Connection</summary>
-        <p class="text-xs text-slate-400">Token: SMS.OTS dashboard &gt; Developers &gt; Reveal token. Sender ID: your approved alphanumeric ID (max 11 characters) or phone number. Saved only to this computer's settings file; no restart needed. The token is never displayed, even partially, by this dashboard.</p>
+        <p class="text-xs text-slate-400">Create or manage your own account at <a class="text-emerald-300 underline" href="https://sms.ots.co.ke/" target="_blank" rel="noopener noreferrer">sms.ots.co.ke</a>. In the provider dashboard open <strong>Developers &gt; Reveal token</strong>, then enter that token and your approved sender ID below. The sender ID may be an approved alphanumeric ID (up to 11 characters) or a phone number with country code. Press <strong>Save</strong>; the token is stored only in this computer's local settings, takes effect without a restart, and is never displayed, even partially, by this dashboard. Never paste it into the website, GitHub, Vercel, or support messages.</p>
         <div class="grid gap-2 sm:grid-cols-[2fr_1fr_auto]">
           <input id="smsToken" type="password" autocomplete="off" placeholder="API token (leave blank to keep current)" class="min-w-0 rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm font-mono">
           <input id="smsSender" placeholder="Sender ID" maxlength="15" class="min-w-0 rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-sm">
@@ -557,7 +557,7 @@
 
     <section id="paymentsSection" class="rounded-2xl bg-slate-900 border border-slate-800 p-5 space-y-3">
       <div class="flex items-center justify-between gap-2 flex-wrap"><h2 class="font-semibold">M-Pesa payments <span id="payState" class="text-xs text-slate-500"></span></h2><button id="payTest" class="text-xs underline text-cyan-300">Test Courtney Tech connection</button></div>
-      <p class="text-xs text-slate-400">Use your own Courtney Tech account. Create or manage it at <a class="text-cyan-300 underline" href="https://courtneytech.xyz/" target="_blank" rel="noopener noreferrer">courtneytech.xyz</a>, then enter the credentials in File &gt; Edit settings (.env). SYNTHNET never sends these credentials to its website or stores them in the public repository.</p>
+      <p class="text-xs text-slate-400">Use your own Courtney Tech account. Create or manage it at <a class="text-cyan-300 underline" href="https://courtneytech.xyz/" target="_blank" rel="noopener noreferrer">courtneytech.xyz</a>, then open <strong>File &gt; Edit settings (.env)</strong> and enter <code>COURTNEYTECH_API_KEY</code>, <code>COURTNEYTECH_API_SECRET</code>, and your numeric <code>COURTNEYTECH_ACCOUNT_ID</code>. Save the file and restart SYNTHNET. Use <strong>Test Courtney Tech connection</strong> after restart; it shows the available account ID to copy into <code>COURTNEYTECH_ACCOUNT_ID</code>. These secrets stay on this computer and are never sent to the SYNTHNET website, GitHub, Vercel, or support email.</p>
       <p id="payTestOut" class="hidden text-xs text-slate-300 break-words"></p>
       <div class="overflow-x-auto max-h-64 overflow-y-auto">
         <table class="w-full text-sm">

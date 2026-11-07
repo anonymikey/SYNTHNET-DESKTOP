@@ -8,6 +8,8 @@ All notable changes to SYNTHNET Desktop are documented here.
 
 **More reliable first-run internet gate setup.** WinDivert downloads now use an isolated temporary staging folder, retry incomplete downloads, validate both x64 driver files before activation, and avoid reusing stale archives from interrupted setup attempts. Failure messages now explain likely Windows Security, antivirus, permissions, and locked-file causes without allowing the hotspot to start with an inactive gate.
 
+**Credential setup guidance.** The Admin dashboard and application guide now explain the Courtney Tech API key, API secret, numeric account ID, SMS.OTS token, and approved sender ID setup in a clear sequence. Provider credentials remain local to the operator's computer and are never displayed or sent to the public website.
+
 ## [0.0.2] - 2026-11-07
 
 
