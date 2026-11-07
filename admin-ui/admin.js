@@ -170,6 +170,17 @@
     $('tourTitle').textContent = step.title; $('tourText').textContent = step.text;
     $('tourBack').disabled = tourIndex === 0; $('tourBack').classList.toggle('opacity-40', tourIndex === 0);
     $('tourNext').textContent = tourIndex === tourSteps.length - 1 ? 'Finish tour' : 'Next';
+    requestAnimationFrame(positionTourCard);
+  }
+  function positionTourCard() {
+    const card = $('tourCard'), target = document.querySelector(tourSteps[tourIndex].target);
+    if (!card || !target) return;
+    const rect = target.getBoundingClientRect(), gap = 18, margin = 16, cardRect = card.getBoundingClientRect();
+    const below = rect.bottom + gap + cardRect.height <= window.innerHeight - margin;
+    const top = below ? rect.bottom + gap : Math.max(margin, rect.top - cardRect.height - gap);
+    const left = Math.min(Math.max(margin, rect.left + Math.min(42, Math.max(12, rect.width / 2)) - 42), window.innerWidth - cardRect.width - margin);
+    card.dataset.placement = below ? 'bottom' : 'top';
+    card.style.top = `${top}px`; card.style.left = `${left}px`;
   }
   function startTour() { $('tourOverlay').classList.remove('hidden'); showTourStep(0); }
   $('tourBtn').onclick = startTour;
@@ -177,6 +188,7 @@
   $('tourBack').onclick = () => showTourStep(tourIndex - 1);
   $('tourNext').onclick = () => tourIndex === tourSteps.length - 1 ? finishTour() : showTourStep(tourIndex + 1);
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !$('tourOverlay').classList.contains('hidden')) finishTour(); });
+  window.addEventListener('resize', () => { if (!$('tourOverlay').classList.contains('hidden')) positionTourCard(); });
 
   /* ---------- Hotspot ---------- */
   function showHotspot(d, fill) {

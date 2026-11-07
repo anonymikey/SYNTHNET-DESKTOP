@@ -71,6 +71,18 @@
     $('#site-tour-title').textContent = step.title; $('#site-tour-text').textContent = step.text;
     $('#site-tour-back').disabled = tourIndex === 0; $('#site-tour-back').classList.toggle('is-disabled', tourIndex === 0);
     $('#site-tour-next').textContent = tourIndex === tourSteps.length - 1 ? 'Finish tour' : 'Next';
+    requestAnimationFrame(positionSiteTourCard);
+  }
+  function positionSiteTourCard() {
+    const card = $('#site-tour-card'), target = document.querySelector(tourSteps[tourIndex].target);
+    if (!card || !target) return;
+    const rect = target.getBoundingClientRect(), gap = 18, margin = 16;
+    const cardRect = card.getBoundingClientRect();
+    const below = rect.bottom + gap + cardRect.height <= window.innerHeight - margin;
+    const top = below ? rect.bottom + gap : Math.max(margin, rect.top - cardRect.height - gap);
+    const left = Math.min(Math.max(margin, rect.left + Math.min(42, Math.max(12, rect.width / 2)) - 42), window.innerWidth - cardRect.width - margin);
+    card.dataset.placement = below ? 'bottom' : 'top';
+    card.style.top = `${top}px`; card.style.left = `${left}px`;
   }
   function startSiteTour() { if (!tour) return; tour.hidden = false; showSiteTourStep(0); }
   document.querySelectorAll('.tour-launch').forEach((button) => button.addEventListener('click', startSiteTour));
@@ -78,5 +90,6 @@
   if ($('#site-tour-back')) $('#site-tour-back').addEventListener('click', () => showSiteTourStep(tourIndex - 1));
   if ($('#site-tour-next')) $('#site-tour-next').addEventListener('click', () => tourIndex === tourSteps.length - 1 ? finishSiteTour() : showSiteTourStep(tourIndex + 1));
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && tour && !tour.hidden) finishSiteTour(); });
+  window.addEventListener('resize', () => { if (tour && !tour.hidden) positionSiteTourCard(); });
   try { if (localStorage.getItem('synthnetWebsiteTour.v1') !== 'done') setTimeout(startSiteTour, 900); } catch { setTimeout(startSiteTour, 900); }
 }());
