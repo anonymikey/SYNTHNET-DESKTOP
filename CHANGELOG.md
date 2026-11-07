@@ -4,6 +4,11 @@ All notable changes to SYNTHNET Desktop are documented here.
 
 ## [Unreleased]
 
+<!-- Add plain-language notes under Unreleased. -->
+
+## [0.0.3] - 2026-11-07
+
+
 ### Fixed
 
 **More reliable first-run internet gate setup.** WinDivert downloads now use an isolated temporary staging folder, retry incomplete downloads, validate both x64 driver files before activation, and avoid reusing stale archives from interrupted setup attempts. Failure messages now explain likely Windows Security, antivirus, permissions, and locked-file causes without allowing the hotspot to start with an inactive gate.
