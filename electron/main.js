@@ -2,6 +2,7 @@ const { app, BrowserWindow, Tray, Menu, dialog, nativeImage, shell } = require('
 const path = require('path'), fs = require('fs'), crypto = require('crypto');
 const { execFile } = require('child_process');
 const updater = require('./updater');
+const { isAllowedExternalUrl } = require('./external-links');
 
 if (!app.requestSingleInstanceLock()) { app.quit(); return; }
 app.setAppUserModelId('com.synthnet.hotspot');
@@ -55,6 +56,7 @@ function readPreviousRunningVersion() { try { return fs.readFileSync(RUNNING_VER
 function rememberRunningVersion(version) { try { fs.writeFileSync(RUNNING_VERSION_MARKER(), String(version)); } catch {} }
 function openReleasePage(version) { shell.openExternal(`${WEBSITE_URL}/release?version=${encodeURIComponent(version)}&from=update`).catch(() => {}); }
 function openStatusPage() { shell.openExternal(`${WEBSITE_URL}/status?from=app&appVersion=${encodeURIComponent(app.getVersion())}&platform=${encodeURIComponent(process.platform)}&arch=${encodeURIComponent(process.arch)}`).catch(() => {}); }
+function openApprovedExternal(url) { if (isAllowedExternalUrl(url)) shell.openExternal(url).catch(() => {}); }
 
 async function checkForUpdates({ force = false } = {}) {
   try {
@@ -98,8 +100,8 @@ function createWindow() {
   const url = `http://localhost:${port}/admin#t=${encodeURIComponent(process.env.ADMIN_TOKEN)}`;
   const load = () => win.loadURL(url).catch(() => {});
   win.webContents.on('did-fail-load', () => setTimeout(load, 1500));
-  win.webContents.setWindowOpenHandler(({ url }) => { if (url.startsWith(WEBSITE_URL)) shell.openExternal(url).catch(() => {}); return { action: 'deny' }; });
-  win.webContents.on('will-navigate', (e, u) => { if (!u.startsWith(`http://localhost:${port}/`)) { e.preventDefault(); if (u.startsWith(WEBSITE_URL)) shell.openExternal(u).catch(() => {}); } });
+  win.webContents.setWindowOpenHandler(({ url }) => { openApprovedExternal(url); return { action: 'deny' }; });
+  win.webContents.on('will-navigate', (e, u) => { if (!u.startsWith(`http://localhost:${port}/`)) { e.preventDefault(); openApprovedExternal(u); } });
   win.on('close', (e) => { if (!quitting) { e.preventDefault(); win.hide(); } });
   load();
 }
@@ -116,10 +118,10 @@ function buildMenus() {
       { label: 'Quit SYNTHNET (stops hotspot)', click: () => quit() }] },
     { label: 'View', submenu: [{ role: 'reload' }, { role: 'toggleDevTools' }] },
     { label: 'Help', submenu: [
-      { label: 'Open SYNTHNET website', click: () => shell.openExternal(`${WEBSITE_URL}/?from=app#download`) },
+      { label: 'Open SYNTHNET website', click: () => openApprovedExternal(`${WEBSITE_URL}/?from=app#download`) },
       { label: 'Open system performance and status', click: openStatusPage },
       { label: 'Check for updates', click: () => checkForUpdates({ force: true }) },
-      { label: 'Contact developer / request a feature', click: () => shell.openExternal(`mailto:${DEVELOPER_EMAIL}?subject=SYNTHNET%20feature%20request%20or%20support`) },
+      { label: 'Contact developer / request a feature', click: () => openApprovedExternal(`mailto:${DEVELOPER_EMAIL}?subject=SYNTHNET%20feature%20request%20or%20support`) },
       { label: 'Preview guest portal in browser', click: () => shell.openExternal(`http://localhost:${port}/login`) }
     ] }
   ]));
