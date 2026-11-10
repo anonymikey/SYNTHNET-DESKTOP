@@ -3,8 +3,15 @@
 All notable changes to SYNTHNET Desktop are documented here.
 
 ## [Unreleased]
-
 <!-- Add plain-language notes under Unreleased. -->
+
+### Fixed
+**Provider and community link flow.** SMS.OTS, Courtney Tech, WhatsApp, Telegram, SYNTHNET website, and developer-contact links now open through a strict approved external-link policy from the desktop app. Unknown or insecure destinations remain blocked.
+
+### Added
+**Desktop update banner.** When the desktop app opens the SYNTHNET website, it passes its installed version. If a newer release is available, the website shows a private release-page banner. Dismissal is stored in local storage for that release and automatically expires when the installed version reaches the latest release.
+
+**Mobile foundation without a public APK promise.** Added an internal shared API and mobile architecture contract. v0.0.5 does not build, advertise, or link an APK; the Windows desktop remains the local network-control layer.
 
 ## [0.0.4] - 2026-11-07
 

@@ -16,3 +16,6 @@
 - [x] Live status redesign: add a reference-inspired operational overview, uptime metrics, no-cache service metadata, and a responsive incident timeline without exposing credentials or customer data.
 - [x] Update visibility: show newer-release alerts at startup, persist the update event in the Admin notification center, and add an Updates & data safety panel with a private release-page action.
 - [x] Update safety confirmation: keep operator state under the persistent Windows application data directory and show a congratulations dialog after a completed version upgrade.
+- [x] v0.0.5 link flow: SMS.OTS, Courtney Tech, WhatsApp, Telegram, website, and developer-contact controls open through the approved external-link policy; unknown destinations remain blocked.
+- [x] v0.0.5 website update banner: compare the installed desktop version, link to the private release page, persist dismissal per release in local storage, and expire the stored state when the installed version reaches the latest release.
+- [x] v0.0.5 mobile preparation: document the shared API and companion-app boundary without building, advertising, or linking an APK.

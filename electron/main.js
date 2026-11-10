@@ -45,7 +45,7 @@ function openProductWebsite() {
   let previous = '';
   try { previous = fs.readFileSync(marker, 'utf8').trim(); } catch {}
   const isNewVersion = previous !== version;
-  const query = isNewVersion ? `/release?version=${encodeURIComponent(version)}&from=installer` : '/?from=app#download';
+  const query = isNewVersion ? `/release?version=${encodeURIComponent(version)}&from=installer&appVersion=${encodeURIComponent(version)}` : `/?from=app&appVersion=${encodeURIComponent(version)}#download`;
   try { fs.writeFileSync(marker, version); } catch {}
   shell.openExternal(`${WEBSITE_URL}${query}`).catch(() => {});
 }
