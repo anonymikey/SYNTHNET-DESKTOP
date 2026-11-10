@@ -1,7 +1,7 @@
 {
   "name": "synthnet",
   "productName": "SYNTHNET",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "SYNTHNET - captive-portal hotspot manager for Windows",
   "main": "electron/main.js",
   "author": "Anonymike Tech <anonymiketech@gmail.com>",

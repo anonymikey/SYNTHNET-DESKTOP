@@ -3,6 +3,11 @@
 All notable changes to SYNTHNET Desktop are documented here.
 
 ## [Unreleased]
+
+<!-- Add plain-language notes under Unreleased. -->
+
+## [0.0.5] - 2026-11-10
+
 <!-- Add plain-language notes under Unreleased. -->
 
 ### Fixed
