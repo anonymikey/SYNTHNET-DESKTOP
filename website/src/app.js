@@ -33,6 +33,9 @@
   const history = $('#release-history');
   const download = $('#download-button');
   const releaseLink = $('#release-link');
+  const downloadMetric = $('#download-metric');
+  const currentDownloadCount = $('#current-download-count');
+  const totalDownloadCount = $('#total-download-count');
   const desktopBanner = $('#desktop-update-banner');
   const desktopBannerTitle = $('#desktop-update-title');
   const desktopBannerCopy = $('#desktop-update-copy');
@@ -65,6 +68,15 @@
   };
   const setStatus = (text, mode) => { if (status) { status.className = `release-state ${mode || ''}`; status.textContent = text; } };
   const api = (path) => fetch(path, { headers: { accept: 'application/json' } }).then((response) => { if (!response.ok) throw new Error('request failed'); return response.json(); });
+  const renderDownloadMetric = (release, releases) => {
+    if (!downloadMetric || !release || !release.installer) return;
+    const current = Number(release.installer.downloads);
+    const total = Array.isArray(releases) ? releases.reduce((sum, item) => sum + (item && item.installer ? Number(item.installer.downloads) || 0 : 0), 0) : current;
+    if (!Number.isFinite(current) || !Number.isFinite(total)) return;
+    if (currentDownloadCount) currentDownloadCount.textContent = new Intl.NumberFormat().format(current);
+    if (totalDownloadCount) totalDownloadCount.textContent = new Intl.NumberFormat().format(total);
+    downloadMetric.hidden = false;
+  };
   const renderRelease = (release) => {
     if (!release) return;
     const version = release.version ? `v${escapeHtml(release.version)}` : 'Latest release';
@@ -77,7 +89,7 @@
     if (!Array.isArray(releases) || !releases.length) { history.innerHTML = '<p class="history-loading">No published releases are available yet.</p>'; return; }
     history.innerHTML = releases.map((release) => { const version = release.version ? `v${release.version}` : (release.tag || 'release'); const pageLabel = `View ${version} release details`; const internalUrl = `/release?version=${encodeURIComponent(release.version || release.tag || '')}`; return `<article class="release-item"><div><div class="release-date">${escapeHtml(formatDate(release.publishedAt))}</div><div class="release-tag">${escapeHtml(release.tag || release.version || '')}</div></div><div><h3>${escapeHtml(release.name || 'SYNTHNET release')}</h3><p>${safeMarkdown(release.notes || 'Release notes were not provided.')}</p></div><a class="release-link" href="${internalUrl}" aria-label="${escapeHtml(pageLabel)}">${escapeHtml(pageLabel)} ↗</a></article>`; }).join('');
   };
-  Promise.all([api('/api/latest'), api('/api/releases')]).then(([latest, all]) => { renderRelease(latest.release); renderDesktopUpdateBanner(latest.release); renderHistory(all.releases); if (all.stale || latest.stale) setStatus(`${latest.release && latest.release.version ? `v${latest.release.version}` : 'Latest release'} · cached release metadata`, 'is-ready'); }).catch(() => { hideDesktopBanner(); setStatus('Release metadata is temporarily unavailable. Try again later.', 'is-error'); if (history) history.innerHTML = '<p class="history-loading">Release history is temporarily unavailable. The page is still available for browsing.</p>'; });
+  Promise.all([api('/api/latest'), api('/api/releases')]).then(([latest, all]) => { renderRelease(latest.release); renderDownloadMetric(latest.release, all.releases); renderDesktopUpdateBanner(latest.release); renderHistory(all.releases); if (all.stale || latest.stale) setStatus(`${latest.release && latest.release.version ? `v${latest.release.version}` : 'Latest release'} · cached release metadata`, 'is-ready'); }).catch(() => { hideDesktopBanner(); setStatus('Release metadata is temporarily unavailable. Try again later.', 'is-error'); if (history) history.innerHTML = '<p class="history-loading">Release history is temporarily unavailable. The page is still available for browsing.</p>'; });
   const year = $('#year'); if (year) year.textContent = String(new Date().getFullYear());
 
 }());
