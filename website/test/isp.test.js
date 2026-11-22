@@ -12,6 +12,9 @@ test('ISP workspace is a separate route with explicit product boundaries', () =>
   assert.match(html, /MikroTik HotSpot/);
   assert.match(html, /TP-Link Omada/);
   assert.match(html, /Other AP \/ RADIUS/);
+  assert.match(html, /Courtney Tech/);
+  assert.match(html, /SMS\.OTS/);
+  assert.match(html, /bring-your-own Courtney Tech M-Pesa credentials/);
   assert.match(html, /Desktop remains the local-first single-site hotspot manager/);
   assert.match(html, /This is the product surface and information architecture/);
   assert.match(html, /src="\/isp\.js"/);

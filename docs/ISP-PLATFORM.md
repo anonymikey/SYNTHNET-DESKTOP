@@ -17,6 +17,14 @@ A paid hotspot system normally connects four states:
 
 The billing core should therefore normalize `tenant`, `site`, `accessNetwork`, `customer`, `plan`, `voucher`, `payment`, `entitlement`, `session`, and `accountingEvent` records. A plan should be transport-neutral even though its adapter output differs by network vendor.
 
+## Payment and SMS provider boundary
+
+The current Desktop billing flow is already integrated with the operator’s own provider accounts. The operator creates an account at [Courtney Tech](https://courtneytech.xyz/), then enters the API key, API secret, and numeric `payment_account_id` in the local Desktop Admin dashboard. SYNTHNET sends M-Pesa STK Push requests, polls the provider status server-side, verifies the amount before activation, resumes pending payments after restart, and treats callbacks only as a trigger for a fresh provider status check.
+
+The current Desktop messaging flow is already integrated with [SMS.OTS / Olympus SMS](https://sms.ots.co.ke/). The operator creates an account, obtains an API token and approved sender ID, then saves them in the local Desktop Admin dashboard. SYNTHNET uses the provider for receipts, reconnect OTPs, expiry and outage notices, and broadcasts through a persistent retrying outbox. Provider secrets remain local and are never placed in the static website.
+
+The separate ISP service must implement these providers server-side before live activation. Its payment adapter must add tenant scoping, idempotency, webhook reconciliation, refunds, audit history, and encrypted credential storage. Its SMS adapter must add tenant scoping, sender validation, delivery/retry state, rate limits, and encrypted credential storage. The `/isp` page describes this boundary and does not claim those live ISP backend adapters are active yet.
+
 ## MikroTik adapter contract
 
 MikroTik HotSpot can run on Ethernet, wireless, VLAN, or bridge interfaces. A HotSpot profile can use RADIUS for authentication and accounting. The billing service should map a plan to the network attributes that RouterOS understands, including:

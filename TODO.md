@@ -21,6 +21,7 @@
 - [x] v0.0.5 mobile preparation: document the shared API and companion-app boundary without building, advertising, or linking an APK.
 
 - [ ] ISP backend activation: provision a separate authenticated multi-tenant ISP service with durable tenant, site, router, plan, voucher, payment, session, and audit records; keep this outside the Electron app and static release website.
+- [x] Desktop provider billing and messaging: operators create their own Courtney Tech and SMS.OTS accounts, enter credentials in the local Desktop Admin dashboard, test the connections, and use their own accounts for M-Pesa checkout, receipts, OTPs, alerts, and retries; secrets never enter the public website.
 - [x] Desktop premium boundary: add an ISP Network premium entry in the Admin dashboard and Help menu that opens the separate ISP workspace without collecting router, RADIUS, or payment secrets locally.
 - [x] ISP workspace information architecture: add a responsive `/isp` surface with operator overview, routers, billing plans, vouchers, payments, network onboarding, and an explicit Desktop-versus-ISP boundary.
 - [x] Network adapter contract: document MikroTik RouterOS HotSpot/RADIUS requirements, Omada external-portal/controller versioning, and the validation boundary for other access points.
