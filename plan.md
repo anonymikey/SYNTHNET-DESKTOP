@@ -50,6 +50,8 @@ The existing Electron application remains the local-first Windows hotspot manage
 
 The separate ISP workspace lives in `website/src/isp.html` with its own browser behavior in `website/src/isp.js` and scoped visual system in `website/src/isp.css`. This first slice is a high-fidelity operator workspace preview and product boundary, not a fake live network integration. It provides the information architecture for an authenticated backend: overview, routers, billing plans, vouchers, payments, and onboarding.
 
+The public ISP surface is disabled by default while backend work continues. `website/build.js` reads the build-time Vercel variable `ISP_ENABLED`; only a strict true-like value enables the preview. Otherwise it writes the controls-free `isp-coming-soon.html` to `/isp` and removes the scoped ISP CSS and JavaScript from the static output. Changing the variable requires a new deployment and affects only the `/isp` surface, not Desktop downloads, APIs, or provider integrations.
+
 ### Integration model
 - MikroTik adapter: RouterOS HotSpot with RADIUS authentication and accounting. Plans map to `Session-Timeout`, `Idle-Timeout`, `Mikrotik-Rate-Limit`, optional data limits, and interim accounting updates. Router onboarding must use a secure outbound agent/tunnel or an explicitly configured API path; the Desktop app is not the transport.
 - Omada adapter: versioned external-portal/controller integration. The portal preserves the controller-provided client context, authenticates the hotspot operator session, then authorizes the client through the controller API. Controller versions must be stored per site because the v6.2.10+ endpoint shape differs from older examples.
@@ -68,5 +70,6 @@ The ISP page follows the existing Aurora control-room design: a dark operational
 - `website/src/isp.js`: tab, onboarding, and demo interactions only; no network-control side effects.
 - `website/src/isp.css`: scoped ISP workspace styles built on the website’s Aurora tokens.
 - `website/build.js` and `website/dev-server.js`: include the `/isp` route in deployable and local route sets.
+- `website/src/isp-coming-soon.html`: safe default page with no ISP workspace controls or ISP JavaScript.
 - `docs/ISP-PLATFORM.md`: evidence-backed integration contract and follow-up backend seams.
 - `website/test/isp.test.js`: route/build assertions for the new surface.

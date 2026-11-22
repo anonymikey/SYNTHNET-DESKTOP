@@ -6,6 +6,8 @@ SYNTHNET Desktop and SYNTHNET ISP Network are two products with different respon
 
 **SYNTHNET ISP Network** is the separate, multi-site control plane for internet providers. It owns tenants, sites, routers, access points, plans, vouchers, payments, sessions, bandwidth policy, notifications, reporting, and audit history. The `/isp` website surface in this repository is the product/workspace preview for that service. It does not claim to authorize a real client or configure a real router until the backend and adapter services are provisioned.
 
+While that backend is under development, the public `/isp` route is deliberately in maintenance/coming-soon mode by default. The static Vercel build reads `ISP_ENABLED`; only an explicit `ISP_ENABLED=true` build publishes the preview assets and workspace controls. A disabled build removes `isp.js` and `isp.css`, so visitors cannot use the preview controls. This flag is scoped to the ISP website surface and does not disable Desktop downloads, APIs, Courtney Tech, or SMS.OTS integrations; changing it requires a fresh Vercel deployment.
+
 ## What hotspot billing needs to do
 
 A paid hotspot system normally connects four states:

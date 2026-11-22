@@ -17,6 +17,8 @@ Open `http://127.0.0.1:4173`. The mock server supplies a fictional local respons
 
 Set `GITHUB_OWNER` and `GITHUB_REPO` in the Vercel project environment. `GITHUB_TOKEN` is optional and is read only by server-side API code; it is never sent to the browser. `GITHUB_API_BASE` is available for tests and controlled proxy environments. The API caches successful data in-process and serves a stale cached response if GitHub is temporarily unavailable.
 
+The ISP Network page is protected by the build-time Vercel variable `ISP_ENABLED`. It is disabled by default: unset it or set `ISP_ENABLED=false` and `/isp` publishes only the maintenance/coming-soon page, with the ISP interaction script removed. Set `ISP_ENABLED=true` only in a Vercel Preview or a deliberately enabled production deployment, then redeploy; changing the variable does not alter an already-built static deployment. The flag controls only the public ISP surface and does not affect Desktop payment or SMS integrations.
+
 The public site fetches `/api/latest` and `/api/releases`. Release notes are escaped before a small markdown subset is rendered, and download links are selected from published release assets. If release metadata is unavailable, the UI keeps the page usable and shows an explicit fallback state.
 
 ## Structure
