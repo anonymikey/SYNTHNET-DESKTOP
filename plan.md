@@ -41,3 +41,31 @@ Use the same Aurora control-room language for the public status page: a calm ope
 The desktop update flow keeps the existing local-first architecture. The startup dialog and Admin notification center announce newer releases, while the persistent **Updates & data safety** panel shows installed/latest versions and opens the private release page. The Electron installer continues to use `%APPDATA%\SYNTHNET\data` for settings, packages, payments, notifications, and other operator state; the post-update dialog confirms that location after a version change.
 
 For v0.0.5, external provider and community links use a strict Electron allowlist and open in the default browser. The website receives an `appVersion` query only when opened by Desktop; its update banner compares that value with the public latest release, remembers dismissal per release in local storage, and removes stale state as soon as the installed version catches up. Mobile work is limited to an internal shared API/architecture contract; no APK is advertised until authentication, tenancy, and remote-agent decisions are approved.
+
+
+## Premium ISP extension
+
+### Product boundary
+The existing Electron application remains the local-first Windows hotspot manager. It must not become the MikroTik/Omada control plane and must not collect router credentials, RADIUS secrets, M-Pesa credentials, or cloud ISP records. The Desktop dashboard gets one premium **ISP Network** entry point that opens the separate ISP workspace on the public platform.
+
+The separate ISP workspace lives in `website/src/isp.html` with its own browser behavior in `website/src/isp.js` and scoped visual system in `website/src/isp.css`. This first slice is a high-fidelity operator workspace preview and product boundary, not a fake live network integration. It provides the information architecture for an authenticated backend: overview, routers, billing plans, vouchers, payments, and onboarding.
+
+### Integration model
+- MikroTik adapter: RouterOS HotSpot with RADIUS authentication and accounting. Plans map to `Session-Timeout`, `Idle-Timeout`, `Mikrotik-Rate-Limit`, optional data limits, and interim accounting updates. Router onboarding must use a secure outbound agent/tunnel or an explicitly configured API path; the Desktop app is not the transport.
+- Omada adapter: versioned external-portal/controller integration. The portal preserves the controller-provided client context, authenticates the hotspot operator session, then authorizes the client through the controller API. Controller versions must be stored per site because the v6.2.10+ endpoint shape differs from older examples.
+- Other AP adapter: only expose a future RADIUS/external-portal compatibility contract until a vendor is validated. Never label an untested AP as supported.
+- Billing core: one normalized entitlement model drives package activation, expiry, bandwidth policy, voucher issuance, payment reconciliation, session visibility, and audit history regardless of the access adapter.
+
+### User experience
+The ISP page follows the existing Aurora control-room design: a dark operational workspace with cyan connectivity, emerald payment health, violet secondary network emphasis, clear status labels, progressive disclosure, and responsive behavior. The page explicitly separates **what stays in Desktop** from **what lives in ISP Network**. Tabs in the preview are keyboard-accessible and use believable but clearly labeled preview data.
+
+### Project structure
+- `electron/main.js`: approved external menu entry for the ISP extension.
+- `admin-ui/index.html`: premium ISP feature card; no router or payment secrets.
+- `admin-ui/admin.js`: optional operator-tour step pointing to the premium feature.
+- `website/src/isp.html`: standalone ISP product/workspace surface.
+- `website/src/isp.js`: tab, onboarding, and demo interactions only; no network-control side effects.
+- `website/src/isp.css`: scoped ISP workspace styles built on the website’s Aurora tokens.
+- `website/build.js` and `website/dev-server.js`: include the `/isp` route in deployable and local route sets.
+- `docs/ISP-PLATFORM.md`: evidence-backed integration contract and follow-up backend seams.
+- `website/test/isp.test.js`: route/build assertions for the new surface.

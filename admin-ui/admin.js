@@ -154,6 +154,7 @@
     { target: '#statHot', title: 'Start with the gate', text: 'Confirm Hotspot and Internet gate are ON before customers connect. If the gate is unavailable, SYNTHNET keeps the hotspot stopped to prevent free internet leaks.' },
     { target: '#clientsSection', title: 'Watch connected devices', text: 'This is where you see phones, TVs and laptops, their package state, time remaining, and the controls to revoke or award access.' },
     { target: '#paymentsSection', title: 'Connect your own payments', text: 'Configure your own Courtney Tech credentials in File > Edit settings (.env), restart, then test the connection here. Never share the API key or secret.' },
+    { target: '#ispSection', title: 'Scale into ISP Network', text: 'The premium ISP Network extension is separate from this Windows app. Use it for multi-site MikroTik, Omada, plans, vouchers, payments, and network operations; no router or payment secrets are collected here.' },
     { target: '#smsSection', title: 'Add optional SMS', text: 'Use your own SMS.OTS token and approved sender ID in the SMS Connection panel. Save and test with your own number; the token is never displayed.' },
     { target: '#bellBtn', title: 'Stay informed', text: 'The notification bell records important payment, device, outage, gate and update events. The Help menu also includes the website, status page, and update check.' }
   ];

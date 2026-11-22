@@ -119,6 +119,7 @@ function buildMenus() {
     { label: 'View', submenu: [{ role: 'reload' }, { role: 'toggleDevTools' }] },
     { label: 'Help', submenu: [
       { label: 'Open SYNTHNET website', click: () => openApprovedExternal(`${WEBSITE_URL}/?from=app#download`) },
+      { label: 'Explore ISP Network (premium)', click: () => openApprovedExternal(`${WEBSITE_URL}/isp?from=desktop-menu`) },
       { label: 'Open system performance and status', click: openStatusPage },
       { label: 'Check for updates', click: () => checkForUpdates({ force: true }) },
       { label: 'Contact developer / request a feature', click: () => openApprovedExternal(`mailto:${DEVELOPER_EMAIL}?subject=SYNTHNET%20feature%20request%20or%20support`) },

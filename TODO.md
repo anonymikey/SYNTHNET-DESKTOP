@@ -19,3 +19,10 @@
 - [x] v0.0.5 link flow: SMS.OTS, Courtney Tech, WhatsApp, Telegram, website, and developer-contact controls open through the approved external-link policy; unknown destinations remain blocked.
 - [x] v0.0.5 website update banner: compare the installed desktop version, link to the private release page, persist dismissal per release in local storage, and expire the stored state when the installed version reaches the latest release.
 - [x] v0.0.5 mobile preparation: document the shared API and companion-app boundary without building, advertising, or linking an APK.
+
+- [ ] ISP backend activation: provision a separate authenticated multi-tenant ISP service with durable tenant, site, router, plan, voucher, payment, session, and audit records; keep this outside the Electron app and static release website.
+- [x] Desktop premium boundary: add an ISP Network premium entry in the Admin dashboard and Help menu that opens the separate ISP workspace without collecting router, RADIUS, or payment secrets locally.
+- [x] ISP workspace information architecture: add a responsive `/isp` surface with operator overview, routers, billing plans, vouchers, payments, network onboarding, and an explicit Desktop-versus-ISP boundary.
+- [x] Network adapter contract: document MikroTik RouterOS HotSpot/RADIUS requirements, Omada external-portal/controller versioning, and the validation boundary for other access points.
+- [x] ISP route delivery: include `/isp` in the website build, local dev server, sitemap, and `manus-routes.json`.
+- [ ] ISP surface checks: add build and route assertions and run the full Desktop and website test suites. ISP-specific website tests, static build checks, syntax checks, and `/isp` route checks pass; the existing Desktop `test/flows.test.js` suite still fails immediately and hangs before completion.
