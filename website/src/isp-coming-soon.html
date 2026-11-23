@@ -25,12 +25,20 @@
           <h1 style="font-size:clamp(44px,6vw,76px)">The ISP Network<br><em>is coming soon.</em></h1>
           <p class="download-copy">The separate SYNTHNET ISP Network control plane for MikroTik, TP-Link Omada, hotspot billing, RADIUS, vouchers, payments, sessions, and reporting is still being built.</p>
           <p class="download-copy">Access is currently closed while we complete the authenticated backend, provider adapters, security controls, and network validation. No workspace, router controls, payment settings, or customer data are available from this page.</p>
-          <div class="hero-actions"><a class="button button-primary" href="/">Back to SYNTHNET Desktop <span>↗</span></a><a class="text-link" href="mailto:anonymiketech@gmail.com?subject=ISP%20Network%20early%20access">Request an update <span>→</span></a></div>
+          <form id="isp-waitlist-form" class="waitlist-form" novalidate>
+            <label for="isp-waitlist-email">Get early access when we launch</label>
+            <div class="waitlist-fields"><input id="isp-waitlist-email" name="email" type="email" autocomplete="email" maxlength="320" placeholder="you@example.com" required><button class="button button-primary" type="submit">Join waiting list</button></div>
+            <input class="waitlist-trap" name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
+            <p class="waitlist-note">We will email you when the platform is ready. No account or payment is required now.</p>
+            <p id="isp-waitlist-status" class="waitlist-status" role="status" aria-live="polite"></p>
+          </form>
+          <div class="hero-actions"><a class="text-link" href="/">Back to SYNTHNET Desktop <span>↗</span></a></div>
         </div>
         <div class="download-side"><div class="download-orbit"><span>ISP</span></div><p class="mono">COMING SOON</p><small>MikroTik · Omada<br>Provider-ready<br>Access closed</small></div>
       </div>
     </section>
   </main>
   <footer class="site-footer"><div class="shell footer-bottom"><span>© <span id="year">%YEAR%</span> SYNTHNET</span><span>ISP Network access is not enabled.</span></div></footer>
+  <script src="/waitlist.js" defer></script>
 </body>
 </html>

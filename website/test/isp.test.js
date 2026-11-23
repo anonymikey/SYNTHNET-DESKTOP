@@ -28,6 +28,8 @@ test('ISP is maintenance-only by default', () => {
   assert.match(html, /Access is currently closed/);
   assert.doesNotMatch(html, /MikroTik HotSpot/);
   assert.doesNotMatch(html, /isp\.js/);
+  assert.match(html, /isp-waitlist-form/);
+  assert.match(html, /waitlist\.js/);
   assert.ok(!fs.existsSync(path.join(root, 'public/isp.js')));
   assert.ok(!fs.existsSync(path.join(root, 'public/isp.css')));
 });

@@ -52,6 +52,8 @@ The separate ISP workspace lives in `website/src/isp.html` with its own browser 
 
 The public ISP surface is disabled by default while backend work continues. `website/build.js` reads the build-time Vercel variable `ISP_ENABLED`; only a strict true-like value enables the preview. Otherwise it writes the controls-free `isp-coming-soon.html` to `/isp` and removes the scoped ISP CSS and JavaScript from the static output. Changing the variable requires a new deployment and affects only the `/isp` surface, not Desktop downloads, APIs, or provider integrations.
 
+The maintenance page includes a database-free early-access waitlist. `website/api/waitlist.js` validates the address, uses the server-only `RESEND_API_KEY` to create a Resend Contact and optional Segment membership, then sends a confirmation through `RESEND_FROM_EMAIL`. `website/src/waitlist.js` handles only the browser form state. Resend Contacts are suitable for the pre-launch list and later Broadcast, but future ISP accounts still require durable authentication, tenant, billing, session, and permission storage in a proper backend.
+
 ### Integration model
 - MikroTik adapter: RouterOS HotSpot with RADIUS authentication and accounting. Plans map to `Session-Timeout`, `Idle-Timeout`, `Mikrotik-Rate-Limit`, optional data limits, and interim accounting updates. Router onboarding must use a secure outbound agent/tunnel or an explicitly configured API path; the Desktop app is not the transport.
 - Omada adapter: versioned external-portal/controller integration. The portal preserves the controller-provided client context, authenticates the hotspot operator session, then authorizes the client through the controller API. Controller versions must be stored per site because the v6.2.10+ endpoint shape differs from older examples.
@@ -71,5 +73,6 @@ The ISP page follows the existing Aurora control-room design: a dark operational
 - `website/src/isp.css`: scoped ISP workspace styles built on the website’s Aurora tokens.
 - `website/build.js` and `website/dev-server.js`: include the `/isp` route in deployable and local route sets.
 - `website/src/isp-coming-soon.html`: safe default page with no ISP workspace controls or ISP JavaScript.
+- `website/src/waitlist.js` and `website/api/waitlist.js`: Resend-backed early-access registration without exposing provider credentials.
 - `docs/ISP-PLATFORM.md`: evidence-backed integration contract and follow-up backend seams.
 - `website/test/isp.test.js`: route/build assertions for the new surface.

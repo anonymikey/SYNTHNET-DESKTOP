@@ -8,6 +8,8 @@ SYNTHNET Desktop and SYNTHNET ISP Network are two products with different respon
 
 While that backend is under development, the public `/isp` route is deliberately in maintenance/coming-soon mode by default. The static Vercel build reads `ISP_ENABLED`; only an explicit `ISP_ENABLED=true` build publishes the preview assets and workspace controls. A disabled build removes `isp.js` and `isp.css`, so visitors cannot use the preview controls. This flag is scoped to the ISP website surface and does not disable Desktop downloads, APIs, Courtney Tech, or SMS.OTS integrations; changing it requires a fresh Vercel deployment.
 
+The maintenance page has a Resend-backed early-access waitlist. A Vercel Function creates a Contact, optionally assigns it to the `ISP Network Early Access` Segment, and sends a confirmation from the verified `@anonymiketech.space` sender. This avoids a separate waitlist database, but Resend Contacts must not be used for ISP login accounts, tenant isolation, router credentials, billing records, sessions, or permissions.
+
 ## What hotspot billing needs to do
 
 A paid hotspot system normally connects four states:
