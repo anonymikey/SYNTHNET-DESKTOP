@@ -19,7 +19,7 @@
       status.className = 'waitlist-status is-success';
       form.reset();
     } catch (error) {
-      status.textContent = error.message === 'invalid_email' ? 'Please enter a valid email address.' : 'We could not join you to the list right now. Please try again shortly.';
+      status.textContent = error.message === 'invalid_email' ? 'Please enter a valid email address.' : error.message === 'not_configured' ? 'Early access registration is being configured. Please try again later.' : 'We could not join you to the list right now. Please try again shortly.';
       status.className = 'waitlist-status is-error';
     } finally {
       if (button) { button.disabled = false; button.textContent = 'Join waiting list'; }

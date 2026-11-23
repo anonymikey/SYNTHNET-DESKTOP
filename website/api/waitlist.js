@@ -27,6 +27,12 @@ async function resend(path, payload, apiKey) {
   return { response, body };
 }
 
+function providerFailure(res, phase, result) {
+  const status = result && result.response ? result.response.status : 0;
+  console.error(`[waitlist] ${phase} failed (${status || 'network'})`);
+  return json(res, 502, { error: 'provider_unavailable', phase });
+}
+
 module.exports = async function waitlistRoute(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
@@ -34,7 +40,7 @@ module.exports = async function waitlistRoute(req, res) {
   }
   const apiKey = String(process.env.RESEND_API_KEY || '').trim();
   const from = String(process.env.RESEND_FROM_EMAIL || '').trim();
-  if (!apiKey || !from) return json(res, 503, { error: 'not_configured' });
+  if (!apiKey || !from) { console.error('[waitlist] missing RESEND_API_KEY or RESEND_FROM_EMAIL'); return json(res, 503, { error: 'not_configured' }); }
 
   const body = await readBody(req);
   if (!body || body.website) return json(res, 400, { error: 'invalid_request' });
@@ -45,19 +51,21 @@ module.exports = async function waitlistRoute(req, res) {
   const contactPayload = { email, unsubscribed: false };
   if (segmentId) contactPayload.segments = [{ id: segmentId }];
 
-  const contactResult = await resend('/contacts', contactPayload, apiKey);
+  let contactResult;
+  try { contactResult = await resend('/contacts', contactPayload, apiKey); } catch (error) { console.error(`[waitlist] contact request failed (${error.name || 'network'})`); return json(res, 502, { error: 'provider_unavailable', phase: 'contact' }); }
   const contactError = contactResult.body && (contactResult.body.name || contactResult.body.error);
   const duplicate = contactResult.response.status === 409 || contactError === 'already_exists' || /already exists|already been added/i.test(String(contactError || ''));
-  if (!contactResult.response.ok && !duplicate) return json(res, 502, { error: 'provider_unavailable' });
+  if (!contactResult.response.ok && !duplicate) return providerFailure(res, 'contact', contactResult);
 
-  const emailResult = await resend('/emails', {
+  let emailResult;
+  try { emailResult = await resend('/emails', {
     from,
     to: [email],
     subject: 'You are on the SYNTHNET ISP early-access list',
     html: '<div style="font-family:Arial,sans-serif;line-height:1.6;color:#17212b;max-width:620px"><p style="color:#087f96;font-weight:700;letter-spacing:.12em;font-size:12px">SYNTHNET ISP NETWORK</p><h1 style="font-size:30px;line-height:1.15">Congratulations — you are on the list.</h1><p>Thank you for joining the SYNTHNET ISP Network early-access list. We are building a separate control plane for hotspot billing, MikroTik, TP-Link Omada, vouchers, payments, sessions, and reporting.</p><p>When the platform is ready, we will send you an early-access invitation with the next steps. No account or payment is required at this stage.</p><p style="color:#5b6872;font-size:13px">You received this message because you requested ISP Network early access from synthnet.anonymiketech.space.</p></div>',
     text: 'Congratulations — you are on the SYNTHNET ISP Network early-access list. Thank you for your interest. When the platform is ready, we will send you an early-access invitation with the next steps. No account or payment is required at this stage.',
-  }, apiKey);
-  if (!emailResult.response.ok) return json(res, 502, { error: 'provider_unavailable' });
+  }, apiKey); } catch (error) { console.error(`[waitlist] email request failed (${error.name || 'network'})`); return json(res, 502, { error: 'provider_unavailable', phase: 'email' }); }
+  if (!emailResult.response.ok) return providerFailure(res, 'email', emailResult);
   return json(res, 200, { ok: true, already_registered: duplicate });
 };
 
