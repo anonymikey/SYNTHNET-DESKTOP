@@ -55,6 +55,7 @@ module.exports = async function waitlistRoute(req, res) {
   try { contactResult = await resend('/contacts', contactPayload, apiKey); } catch (error) { console.error(`[waitlist] contact request failed (${error.name || 'network'})`); return json(res, 502, { error: 'provider_unavailable', phase: 'contact' }); }
   const contactError = contactResult.body && (contactResult.body.name || contactResult.body.error);
   const duplicate = contactResult.response.status === 409 || contactError === 'already_exists' || /already exists|already been added/i.test(String(contactError || ''));
+  if (duplicate) { console.info('[waitlist] duplicate contact rejected'); return json(res, 409, { error: 'already_registered' }); }
   if (!contactResult.response.ok && !duplicate) return providerFailure(res, 'contact', contactResult);
 
   let emailResult;
@@ -66,7 +67,7 @@ module.exports = async function waitlistRoute(req, res) {
     text: 'Congratulations — you are on the SYNTHNET ISP Network early-access list. Thank you for your interest. When the platform is ready, we will send you an early-access invitation with the next steps. No account or payment is required at this stage.',
   }, apiKey); } catch (error) { console.error(`[waitlist] email request failed (${error.name || 'network'})`); return json(res, 502, { error: 'provider_unavailable', phase: 'email' }); }
   if (!emailResult.response.ok) return providerFailure(res, 'email', emailResult);
-  return json(res, 200, { ok: true, already_registered: duplicate });
+  return json(res, 200, { ok: true });
 };
 
 module.exports._readBody = readBody;

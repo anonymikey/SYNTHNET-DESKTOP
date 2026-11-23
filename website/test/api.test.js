@@ -32,7 +32,7 @@ test('waitlist registers a Resend contact and sends a confirmation without expos
   global.fetch = async (url, options) => { calls.push({ url, options: JSON.parse(options.body) }); return { ok: true, status: 200, async json() { return { id: 'resend-id' }; } }; };
   try {
     const result = responseRecorder(); await waitlist({ method: 'POST', body: { email: 'Person@example.com', website: '' } }, result);
-    assert.equal(result.statusCode, 200); assert.deepEqual(result.body, { ok: true, already_registered: false }); assert.equal(calls.length, 2);
+    assert.equal(result.statusCode, 200); assert.deepEqual(result.body, { ok: true }); assert.equal(calls.length, 2);
     assert.equal(calls[0].url, 'https://api.resend.com/contacts'); assert.equal(calls[0].options.email, 'person@example.com'); assert.deepEqual(calls[0].options.segments, [{ id: 'segment-early-access' }]);
     assert.equal(calls[1].url, 'https://api.resend.com/emails'); assert.deepEqual(calls[1].options.to, ['person@example.com']); assert.equal(calls[1].options.from, 'updates@anonymiketech.space');
   } finally { global.fetch = previousFetch; for (const [key, value] of Object.entries(previous)) { if (value === undefined) delete process.env[{ key: 'RESEND_API_KEY', from: 'RESEND_FROM_EMAIL', segment: 'RESEND_SEGMENT_ID' }[key]]; else process.env[{ key: 'RESEND_API_KEY', from: 'RESEND_FROM_EMAIL', segment: 'RESEND_SEGMENT_ID' }[key]] = value; } }
@@ -43,4 +43,14 @@ test('waitlist fails safely when Resend is not configured', { concurrency: false
   delete process.env.RESEND_API_KEY; delete process.env.RESEND_FROM_EMAIL;
   try { const result = responseRecorder(); await waitlist({ method: 'POST', body: { email: 'person@example.com' } }, result); assert.equal(result.statusCode, 503); assert.deepEqual(result.body, { error: 'not_configured' }); }
   finally { if (previous.key === undefined) delete process.env.RESEND_API_KEY; else process.env.RESEND_API_KEY = previous.key; if (previous.from === undefined) delete process.env.RESEND_FROM_EMAIL; else process.env.RESEND_FROM_EMAIL = previous.from; }
+});
+
+test('waitlist rejects an existing contact without sending another confirmation', { concurrency: false }, async () => {
+  const previousFetch = global.fetch;
+  const previous = { key: process.env.RESEND_API_KEY, from: process.env.RESEND_FROM_EMAIL };
+  let emailCalls = 0;
+  process.env.RESEND_API_KEY = 'test-resend-key'; process.env.RESEND_FROM_EMAIL = 'updates@anonymiketech.space';
+  global.fetch = async (url) => { if (url.endsWith('/emails')) emailCalls += 1; return { ok: false, status: 409, async json() { return { name: 'already_exists', message: 'Contact already exists' }; } }; };
+  try { const result = responseRecorder(); await waitlist({ method: 'POST', body: { email: 'person@example.com', website: '' } }, result); assert.equal(result.statusCode, 409); assert.deepEqual(result.body, { error: 'already_registered' }); assert.equal(emailCalls, 0); }
+  finally { global.fetch = previousFetch; if (previous.key === undefined) delete process.env.RESEND_API_KEY; else process.env.RESEND_API_KEY = previous.key; if (previous.from === undefined) delete process.env.RESEND_FROM_EMAIL; else process.env.RESEND_FROM_EMAIL = previous.from; }
 });
